@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6e3a1"/>
+      <stop offset="0.55" stop-color="#d6b15c"/>
+      <stop offset="1" stop-color="#a67c2a"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="30%" cy="20%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="#0b0a10"/>
+  <circle cx="180" cy="140" r="220" fill="url(#shine)"/>
+
+  <!-- Simple trophy -->
+  <path d="M160 150h192v70c0 70-45 122-96 140-51-18-96-70-96-140v-70z" fill="url(#g)"/>
+  <path d="M132 170h28v35c0 35-22 70-52 78v-26c18-7 24-32 24-52v-35z" fill="url(#g)"/>
+  <path d="M352 170h28v35c0 20 6 45 24 52v26c-30-8-52-43-52-78v-35z" fill="url(#g)"/>
+
+  <rect x="232" y="360" width="48" height="54" rx="12" fill="url(#g)"/>
+  <rect x="180" y="414" width="152" height="40" rx="14" fill="url(#g)"/>
+
+  <!-- WP -->
+  <text x="256" y="265" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-weight="800" font-size="54" fill="#0b0a10" opacity="0.9">
+    WP
+  </text>
+</svg>
