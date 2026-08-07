@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NFC Wanderpokal (Web NFC)</title>
+  <title>NFC Wanderpokal</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b0a10">
+  <link rel="icon" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
   <style>
     :root{
       --bg0:#07060a;
@@ -732,7 +739,6 @@
       }
     }
 
-    // Web NFC helpers
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
     function updateTopPanels(){
@@ -818,6 +824,13 @@
       }catch(err){
         setStatus("err", `NFC Schreiben fehlgeschlagen: ${err && err.message ? err.message : String(err)}`);
       }
+    }
+
+    // PWA: Service Worker registrieren
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
     }
 
     // Events
