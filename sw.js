@@ -1,11 +1,11 @@
-const CACHE_NAME = "wanderpokal-pwa-v2";
+const CACHE_NAME = "wanderpokal-pwa-v2"; // <- v2 wichtig
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./sw.js",
-  "./icon-192.png",
-  "./icon-512.png"
+  "/GDV2026/",
+  "/GDV2026/index.html",
+  "/GDV2026/manifest.webmanifest",
+  "/GDV2026/sw.js",
+  "/GDV2026/icon-192.png",
+  "/GDV2026/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
