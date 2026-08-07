@@ -160,6 +160,24 @@
       background: linear-gradient(180deg, rgba(255,107,107,0.18), rgba(0,0,0,0.18));
     }
 
+    /* NFC actions layout (big centered read button) */
+    .nfcActions{
+      display:flex;
+      flex-direction: column;
+      align-items:center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btnBig{
+      width: min(520px, 100%);
+      padding: 14px 14px;
+      font-size: 16px;
+      border-radius: 14px;
+    }
+    .btnSmall{
+      width: min(340px, 100%);
+    }
+
     label{
       display:block;
       font-size: 12px;
@@ -281,7 +299,6 @@
       font-size: 12px;
       padding: 0 4px;
     }
-    .small{ font-size: 12px; color: var(--muted); }
   </style>
 </head>
 
@@ -296,18 +313,15 @@
 
     <!-- TOP: NFC READ view (wenn Web NFC verfügbar) -->
     <section id="topNfcPanel" class="panel hide">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-        <div>
-          <div style="color:var(--muted);font-size:12px;">Web NFC</div>
-          <div style="font-size:14px;font-weight:700;">Tag lesen und direkt auswerten</div>
-        </div>
-        <div class="btnbar" style="margin-top:0;">
-          <button id="btnNfcRead" class="primary">NFC lesen</button>
-          <button id="btnClearTop" class="danger">Zurücksetzen</button>
-        </div>
+      <div style="color:var(--muted);font-size:12px;">Web NFC</div>
+
+      <div class="nfcActions">
+        <button id="btnNfcRead" class="primary btnBig">Pokal auslesen</button>
+        <button id="btnClearTop" class="danger btnSmall">Zurücksetzen</button>
       </div>
-      <div id="status" class="status">Tippe auf „NFC lesen“ und halte den Tag an dein Gerät.</div>
-      <div class="small" id="nfcInfo"></div>
+
+      <div id="status" class="status">Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.</div>
+      <!-- Hinweistext unter den Buttons bewusst entfernt -->
     </section>
 
     <!-- TOP: MANUAL view (wenn Web NFC NICHT verfügbar) -->
@@ -389,7 +403,6 @@
         </table>
       </div>
 
-      <!-- MIDDLE: Export / edit area (weiterhin bearbeitbar) -->
       <div style="margin-top: 12px;">
         <label for="exportText">Aktualisierte NFC-Daten (bearbeitbar)</label>
         <textarea id="exportText" spellcheck="false"></textarea>
@@ -399,7 +412,6 @@
         </div>
       </div>
 
-      <!-- BOTTOM: NFC WRITE button only here -->
       <div class="btnbar" style="margin-top: 12px;">
         <button class="primary" id="btnNfcWrite">NFC schreiben</button>
       </div>
@@ -435,7 +447,6 @@
       btnNfcWrite: $("#btnNfcWrite"),
       btnClearTop: $("#btnClearTop"),
       status: $("#status"),
-      nfcInfo: $("#nfcInfo"),
 
       // after read
       afterRead: $("#afterRead"),
@@ -612,9 +623,9 @@
       const frag = document.createDocumentFragment();
       for (const p of state.players){
         const opt = document.createElement("option");
-        opt.value = p.id; // internal id stays
+        opt.value = p.id;
         const nick = p.nick ? ` (${p.nick})` : "";
-        opt.textContent = `${p.name}${nick}`; // no ID shown
+        opt.textContent = `${p.name}${nick}`;
         frag.appendChild(opt);
       }
       els.playerPick.appendChild(frag);
@@ -655,7 +666,6 @@
         const name = p
           ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}`
           : "Unbekannter Spieler";
-
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${escapeHtml(w.date)}</td><td>${name}</td>`;
         els.historyBody.appendChild(tr);
@@ -698,11 +708,6 @@
       }
     }
 
-    function renderExport(){
-      // Export-Text ist jetzt bearbeitbar.
-      els.exportText.value = buildExportText();
-    }
-
     function renderAllAfterRead(){
       els.afterRead.classList.remove("hide");
       els.datePick.value = todayISO();
@@ -713,7 +718,7 @@
       renderCounts();
       renderHistoryTable();
       renderHallOfFame();
-      renderExport();
+      els.exportText.value = buildExportText();
     }
 
     function applyParsed(parsed){
@@ -727,7 +732,6 @@
       try{
         const parsed = parseNfcText(els.inputText.value);
         applyParsed(parsed);
-        setStatus("ok", "Daten erfolgreich eingelesen.");
         renderAllAfterRead();
       }catch(err){
         els.afterRead.classList.add("hide");
@@ -770,6 +774,17 @@
       setStatus("ok", `Gewinner hinzugefügt: ${p ? p.name : "Unbekannter Spieler"} am ${date}.`);
     }
 
+    function reparseFromExport(){
+      try{
+        const parsed = parseNfcText(els.exportText.value);
+        applyParsed(parsed);
+        setStatus("ok", "Änderungen übernommen und neu geparst.");
+        renderAllAfterRead();
+      }catch(err){
+        setStatus("err", err instanceof Error ? err.message : String(err));
+      }
+    }
+
     async function copyExportToClipboard(){
       const text = (els.exportText.value || "").trim();
       if (!text){
@@ -794,17 +809,6 @@
       }
     }
 
-    function reparseFromExport(){
-      try{
-        const parsed = parseNfcText(els.exportText.value);
-        applyParsed(parsed);
-        setStatus("ok", "Änderungen übernommen und neu geparst.");
-        renderAllAfterRead();
-      }catch(err){
-        setStatus("err", err instanceof Error ? err.message : String(err));
-      }
-    }
-
     function resetAll(){
       state.cupId = null;
       state.cupName = null;
@@ -823,7 +827,8 @@
       els.btnToggleHof.textContent = "Hall of Fame anzeigen";
 
       renderHeader();
-      setStatus(null, "Zurückgesetzt. Tippe auf „NFC lesen“.");
+      setStatus(null, "Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.");
+
       if (els.statusManual){
         els.statusManual.classList.remove("err");
         els.statusManual.textContent = "Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.";
@@ -843,27 +848,14 @@
       if (!els.hofWrap.classList.contains("hide")) renderHallOfFame();
     }
 
-    // ----------------------------
     // Web NFC
-    // ----------------------------
-    function hasWebNfc(){
-      return ("NDEFReader" in window);
-    }
-    function isSecureContextOk(){
-      return (location.protocol === "https:" || location.hostname === "localhost");
-    }
+    function hasWebNfc(){ return ("NDEFReader" in window); }
+    function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
 
     function updateTopPanels(){
       const nfcOk = hasWebNfc() && isSecureContextOk();
-
       els.topNfcPanel.classList.toggle("hide", !nfcOk);
       els.topManualPanel.classList.toggle("hide", nfcOk);
-
-      if (nfcOk){
-        els.nfcInfo.textContent = "Bereit. Handy entsperrt halten, NFC an, Chrome/Edge auf Android.";
-      }else{
-        // manual panel exists
-      }
     }
 
     function extractTextFromNdefMessage(message){
@@ -873,21 +865,15 @@
         }
       }
       for (const rec of message.records){
-        if (rec.recordType === "text" && rec.data){
-          const decoded = tryDecodeRecordData(rec);
-          if (decoded) return decoded;
-        }
-        if (rec.recordType === "mime" && rec.mediaType === "text/plain"){
-          const decoded = tryDecodeRecordData(rec);
-          if (decoded) return decoded;
-        }
+        const decoded = tryDecodeRecordData(rec);
+        if (decoded) return decoded;
       }
       return "";
     }
 
     function tryDecodeRecordData(rec){
       try{
-        if (!rec.data) return "";
+        if (!rec || !rec.data) return "";
         if (rec.data instanceof DataView){
           return new TextDecoder("utf-8").decode(rec.data);
         }
@@ -920,11 +906,10 @@
             const text = extractTextFromNdefMessage(event.message);
             if (!text) throw new Error("Kein lesbarer Text-Record gefunden.");
 
-            // Direkt parsen & anzeigen (ohne sichtbares Eingabefeld)
             const parsed = parseNfcText(text);
             applyParsed(parsed);
 
-            setStatus("ok", "NFC gelesen und ausgewertet.");
+            setStatus("ok", "Pokal erfolgreich ausgelesen.");
             renderAllAfterRead();
 
           }catch(e){
@@ -977,19 +962,14 @@
       }
     }
 
-    // ----------------------------
     // Events
-    // ----------------------------
-    // manual
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     if (els.btnClear) els.btnClear.addEventListener("click", resetAll);
 
-    // NFC
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
     els.btnClearTop.addEventListener("click", resetAll);
 
-    // after read
     els.btnAddWinner.addEventListener("click", addWinner);
     els.btnToggleHistory.addEventListener("click", toggleHistory);
     els.btnToggleHof.addEventListener("click", toggleHof);
@@ -1000,14 +980,7 @@
       renderHeader();
       els.datePick.value = todayISO();
       updateTopPanels();
-
-      if (!(hasWebNfc() && isSecureContextOk())){
-        // initial manual status styling
-        if (els.statusManual){
-          els.statusManual.classList.remove("ok","warn");
-          els.statusManual.classList.remove("err");
-        }
-      }
+      setStatus(null, "Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.");
     })();
   </script>
 </body>
