@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NFC PWA Test</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#111111" />
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
+    h1 { margin: 0 0 8px; }
+    .meta { color:#444; margin-bottom: 12px; }
+    button { padding: 10px 14px; font-size: 16px; margin-right: 8px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    pre { background:#0b0f14; color:#b7ffb7; padding:12px; border-radius:10px; overflow:auto; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    .badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+    .ok { background:#dcfce7; color:#166534; }
+    .bad { background:#fee2e2; color:#991b1b; }
+    .warn { background:#ffedd5; color:#9a3412; }
+    .small { font-size: 12px; color:#555; }
+    input[type="text"] { width: 100%; padding: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>NFC PWA Test</h1>
+  <div class="meta">
+    Secure Context: <span id="secure" class="badge">?</span>
+    WebNFC (NDEFReader): <span id="nfc" class="badge">?</span>
+    Service Worker: <span id="sw" class="badge">?</span>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="btnScan" disabled>NFC Scan starten</button>
+      <button id="btnStop" disabled>Stop</button>
+      <button id="btnClear">Log löschen</button>
+    </div>
+    <p class="small">
+      WebNFC funktioniert typischerweise nur auf Android (Chrome/Edge), über HTTPS und nur nach Nutzeraktion.
+      iOS/Safari: i. d. R. nicht unterstützt.
+    </p>
+  </div>
+
+  <div class="card">
+    <b>Letzter gelesener Text:</b>
+    <div style="margin-top:8px;">
+      <input id="lastText" type="text" placeholder="Noch nichts gelesen…" readonly />
+    </div>
+    <div class="small" style="margin-top:6px;">
+      Wird in <code>localStorage</code> gespeichert und bleibt auch offline erhalten.
+    </div>
+  </div>
+
+  <div class="card">
+    <b>Log</b>
+    <pre id="log"></pre>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>
+    // PWA / Offline: Service Worker registrieren
+    (async () => {
+      const swBadge = document.getElementById("sw");
+      try {
+        if ("serviceWorker" in navigator) {
+          await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+          swBadge.textContent = "JA";
+          swBadge.className = "badge ok";
+        } else {
+          swBadge.textContent = "NEIN";
+          swBadge.className = "badge bad";
+        }
+      } catch (e) {
+        swBadge.textContent = "FEHLER";
+        swBadge.className = "badge bad";
+      }
+    })();
+  </script>
+</body>
+</html>
