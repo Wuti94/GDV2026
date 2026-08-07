@@ -72,7 +72,6 @@
       text-shadow: 0 1px 0 rgba(0,0,0,0.35);
     }
 
-    /* Pill without dot/text (hidden by default; shows only cupId) */
     .pill{
       display:inline-flex;
       align-items:center;
@@ -260,12 +259,6 @@
     .row > .col{ flex: 1 1 240px; min-width: 220px; }
 
     .hide{ display:none !important; }
-    footer{
-      margin-top: 14px;
-      color: rgba(200,193,178,0.85);
-      font-size: 12px;
-      padding: 0 4px;
-    }
   </style>
 </head>
 
@@ -274,12 +267,10 @@
     <header>
       <div class="headrow">
         <h1 id="cupName">Wanderpokal</h1>
-        <!-- Punkt + Text entfernt, Pill zeigt nur die Pokal-ID -->
         <span class="pill" id="cupIdPill">–</span>
       </div>
     </header>
 
-    <!-- TOP: NFC READ view (wenn Web NFC verfügbar) -->
     <section id="topNfcPanel" class="panel hide">
       <div style="color:var(--muted);font-size:12px;">Web NFC</div>
       <div class="nfcActions">
@@ -288,7 +279,6 @@
       <div id="status" class="status">Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.</div>
     </section>
 
-    <!-- TOP: MANUAL view (wenn Web NFC NICHT verfügbar) -->
     <section id="topManualPanel" class="panel hide">
       <label for="inputText">NFC-Daten einfügen (manuell)</label>
       <textarea id="inputText" spellcheck="false" placeholder="Hier NFC-Text einfügen…"></textarea>
@@ -298,7 +288,6 @@
       <div id="statusManual" class="status">Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.</div>
     </section>
 
-    <!-- AFTER READ -->
     <section id="afterRead" class="panel hide">
       <div class="subpanel">
         <div class="grid2">
@@ -318,7 +307,6 @@
               <div style="font-size:12px;color:var(--muted);">Anzahl Spieler / Turniere</div>
               <div style="font-size:14px;"><b id="counts">–</b></div>
             </div>
-            <!-- WP1 rechts entfernt -->
           </div>
         </div>
 
@@ -373,8 +361,6 @@
         </div>
       </div>
     </section>
-
-    <footer>Web NFC: Android Chrome/Edge · HTTPS erforderlich · iOS wird nicht unterstützt.</footer>
   </div>
 
   <script>
@@ -484,7 +470,6 @@
     }
 
     function renderCupIdPill(){
-      // zeigt nur die Pokal-ID, sonst einen Strich
       els.cupIdPill.textContent = state.cupId ? state.cupId : "–";
     }
 
@@ -690,7 +675,7 @@
       try{
         const parsed = parseNfcText(els.inputText.value);
         applyParsed(parsed);
-        clearManualErrorUI();   // Fehlermeldungen entfernen
+        clearManualErrorUI();
         renderAllAfterRead();
       }catch(err){
         els.afterRead.classList.add("hide");
