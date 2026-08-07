@@ -125,50 +125,6 @@
       box-shadow: 0 10px 28px rgba(0,0,0,0.35);
     }
 
-    label{
-      display:block;
-      font-size: 12px;
-      letter-spacing: 0.2px;
-      color: var(--muted);
-      margin: 0 0 6px;
-    }
-
-    textarea, input[type="date"], select{
-      width: 100%;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.10));
-      color: var(--text);
-      border-radius: 12px;
-      padding: 11px 12px;
-      outline: none;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
-    }
-
-    textarea{
-      min-height: 180px;
-      resize: vertical;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 13px;
-      line-height: 1.35;
-      white-space: pre;
-    }
-
-    textarea:focus, input[type="date"]:focus, select:focus{
-      border-color: rgba(232,197,110,0.65);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), var(--glow);
-    }
-
-    .row{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: end;
-    }
-    .row > .col{
-      flex: 1 1 240px;
-      min-width: 220px;
-    }
-
     .btnbar{
       display:flex;
       gap: 10px;
@@ -202,6 +158,39 @@
     button.danger{
       border-color: rgba(255,107,107,0.55);
       background: linear-gradient(180deg, rgba(255,107,107,0.18), rgba(0,0,0,0.18));
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    textarea, input[type="date"], select{
+      width: 100%;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.10));
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+    }
+
+    textarea{
+      min-height: 180px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.35;
+      white-space: pre;
+    }
+
+    textarea:focus, input[type="date"]:focus, select:focus{
+      border-color: rgba(232,197,110,0.65);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), var(--glow);
     }
 
     .status{
@@ -250,8 +239,6 @@
         radial-gradient(700px 140px at 20% 0%, rgba(246,227,161,0.06), transparent 60%),
         linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
     }
-    .kv b{ color: var(--text); }
-    .kv span{ color: var(--muted); }
 
     table{
       width: 100%;
@@ -276,6 +263,17 @@
     }
     tr:last-child td{ border-bottom: none; }
 
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .row > .col{
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+
     .hide{ display:none !important; }
     footer{
       margin-top: 14px;
@@ -296,24 +294,36 @@
       </div>
     </header>
 
-    <section class="panel">
-      <label for="inputText">NFC-Daten</label>
-      <textarea id="inputText" spellcheck="false" placeholder="Du kannst manuell einfügen oder per Web NFC lesen…"></textarea>
-
-      <div class="btnbar">
-        <button class="primary" id="btnRead">Einlesen</button>
-
-        <!-- Web NFC -->
-        <button id="btnNfcRead">NFC lesen</button>
-        <button class="primary" id="btnNfcWrite">NFC schreiben</button>
-
-        <button class="danger" id="btnClear">Zurücksetzen</button>
+    <!-- TOP: NFC READ view (wenn Web NFC verfügbar) -->
+    <section id="topNfcPanel" class="panel hide">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="color:var(--muted);font-size:12px;">Web NFC</div>
+          <div style="font-size:14px;font-weight:700;">Tag lesen und direkt auswerten</div>
+        </div>
+        <div class="btnbar" style="margin-top:0;">
+          <button id="btnNfcRead" class="primary">NFC lesen</button>
+          <button id="btnClearTop" class="danger">Zurücksetzen</button>
+        </div>
       </div>
-
-      <div id="status" class="status">Tipp: Auf Android (Chrome) kannst du direkt „NFC lesen“ / „NFC schreiben“ nutzen.</div>
+      <div id="status" class="status">Tippe auf „NFC lesen“ und halte den Tag an dein Gerät.</div>
       <div class="small" id="nfcInfo"></div>
     </section>
 
+    <!-- TOP: MANUAL view (wenn Web NFC NICHT verfügbar) -->
+    <section id="topManualPanel" class="panel hide">
+      <label for="inputText">NFC-Daten einfügen (manuell)</label>
+      <textarea id="inputText" spellcheck="false" placeholder="Hier NFC-Text einfügen…"></textarea>
+
+      <div class="btnbar">
+        <button class="primary" id="btnRead">Einlesen</button>
+        <button class="danger" id="btnClear">Zurücksetzen</button>
+      </div>
+
+      <div id="statusManual" class="status">Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.</div>
+    </section>
+
+    <!-- AFTER READ -->
     <section id="afterRead" class="panel hide">
       <div class="grid2">
         <div class="kv">
@@ -379,13 +389,19 @@
         </table>
       </div>
 
+      <!-- MIDDLE: Export / edit area (weiterhin bearbeitbar) -->
       <div style="margin-top: 12px;">
-        <label for="exportText">Aktualisierte NFC-Daten (zum Zurückschreiben)</label>
-        <textarea id="exportText" spellcheck="false" readonly></textarea>
+        <label for="exportText">Aktualisierte NFC-Daten (bearbeitbar)</label>
+        <textarea id="exportText" spellcheck="false"></textarea>
         <div class="btnbar">
           <button id="btnCopy">In Zwischenablage kopieren</button>
-          <button class="primary" id="btnNfcWrite2">Export direkt auf NFC schreiben</button>
+          <button class="danger" id="btnReparse">Änderungen übernehmen (neu parsen)</button>
         </div>
+      </div>
+
+      <!-- BOTTOM: NFC WRITE button only here -->
+      <div class="btnbar" style="margin-top: 12px;">
+        <button class="primary" id="btnNfcWrite">NFC schreiben</button>
       </div>
     </section>
 
@@ -405,16 +421,23 @@
       cupName: $("#cupName"),
       cupIdPill: $("#cupIdPill"),
 
+      topNfcPanel: $("#topNfcPanel"),
+      topManualPanel: $("#topManualPanel"),
+
+      // manual
       inputText: $("#inputText"),
       btnRead: $("#btnRead"),
       btnClear: $("#btnClear"),
-      status: $("#status"),
+      statusManual: $("#statusManual"),
 
+      // nfc
       btnNfcRead: $("#btnNfcRead"),
       btnNfcWrite: $("#btnNfcWrite"),
-      btnNfcWrite2: $("#btnNfcWrite2"),
+      btnClearTop: $("#btnClearTop"),
+      status: $("#status"),
       nfcInfo: $("#nfcInfo"),
 
+      // after read
       afterRead: $("#afterRead"),
       lastWinnerName: $("#lastWinnerName"),
       lastWinnerMeta: $("#lastWinnerMeta"),
@@ -436,6 +459,7 @@
 
       exportText: $("#exportText"),
       btnCopy: $("#btnCopy"),
+      btnReparse: $("#btnReparse"),
     };
 
     const state = {
@@ -588,9 +612,9 @@
       const frag = document.createDocumentFragment();
       for (const p of state.players){
         const opt = document.createElement("option");
-        opt.value = p.id; // intern
+        opt.value = p.id; // internal id stays
         const nick = p.nick ? ` (${p.nick})` : "";
-        opt.textContent = `${p.name}${nick}`; // ohne ID
+        opt.textContent = `${p.name}${nick}`; // no ID shown
         frag.appendChild(opt);
       }
       els.playerPick.appendChild(frag);
@@ -633,10 +657,7 @@
           : "Unbekannter Spieler";
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(w.date)}</td>
-          <td>${name}</td>
-        `;
+        tr.innerHTML = `<td>${escapeHtml(w.date)}</td><td>${name}</td>`;
         els.historyBody.appendChild(tr);
       }
     }
@@ -672,15 +693,13 @@
         if (r.wins === 0) continue;
         const nick = r.nick ? ` (${escapeHtml(r.nick)})` : "";
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(r.name)}${nick}</td>
-          <td><b>${r.wins}</b></td>
-        `;
+        tr.innerHTML = `<td>${escapeHtml(r.name)}${nick}</td><td><b>${r.wins}</b></td>`;
         els.hofBody.appendChild(tr);
       }
     }
 
     function renderExport(){
+      // Export-Text ist jetzt bearbeitbar.
       els.exportText.value = buildExportText();
     }
 
@@ -697,21 +716,25 @@
       renderExport();
     }
 
-    function readInput(){
+    function applyParsed(parsed){
+      state.cupId = parsed.cupId;
+      state.cupName = parsed.cupName;
+      state.players = parsed.players;
+      state.winners = parsed.winners;
+    }
+
+    function readInputManual(){
       try{
         const parsed = parseNfcText(els.inputText.value);
-        state.cupId = parsed.cupId;
-        state.cupName = parsed.cupName;
-        state.players = parsed.players;
-        state.winners = parsed.winners;
-
+        applyParsed(parsed);
         setStatus("ok", "Daten erfolgreich eingelesen.");
         renderAllAfterRead();
       }catch(err){
-        setStatus("err", err instanceof Error ? err.message : String(err));
         els.afterRead.classList.add("hide");
         state.cupId = null; state.cupName = null;
         renderHeader();
+        els.statusManual.classList.add("err");
+        els.statusManual.textContent = (err instanceof Error ? err.message : String(err));
       }
     }
 
@@ -741,35 +764,44 @@
       renderCounts();
       renderHistoryTable();
       renderHallOfFame();
-      renderExport();
+      els.exportText.value = buildExportText();
 
       const p = playerById(playerId);
       setStatus("ok", `Gewinner hinzugefügt: ${p ? p.name : "Unbekannter Spieler"} am ${date}.`);
     }
 
     async function copyExportToClipboard(){
-      const text = els.exportText.value;
-      if (!text.trim()){
-        setStatus("err", "Kein Exporttext vorhanden.");
+      const text = (els.exportText.value || "").trim();
+      if (!text){
+        setStatus("err", "Kein Text vorhanden.");
         return;
       }
-
       try{
         if (navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(text);
-          setStatus("ok", "Exporttext wurde in die Zwischenablage kopiert.");
+          setStatus("ok", "Text wurde in die Zwischenablage kopiert.");
           return;
         }
       }catch(_e){}
-
       try{
         els.exportText.focus();
         els.exportText.select();
         const ok = document.execCommand("copy");
-        if (ok) setStatus("ok", "Exporttext wurde in die Zwischenablage kopiert.");
-        else setStatus("err", "Kopieren nicht erlaubt. Bitte manuell markieren und kopieren.");
+        if (ok) setStatus("ok", "Text wurde in die Zwischenablage kopiert.");
+        else setStatus("err", "Kopieren nicht erlaubt. Bitte manuell kopieren.");
       }catch(_e){
-        setStatus("err", "Kopieren nicht erlaubt. Bitte manuell markieren und kopieren.");
+        setStatus("err", "Kopieren nicht erlaubt. Bitte manuell kopieren.");
+      }
+    }
+
+    function reparseFromExport(){
+      try{
+        const parsed = parseNfcText(els.exportText.value);
+        applyParsed(parsed);
+        setStatus("ok", "Änderungen übernommen und neu geparst.");
+        renderAllAfterRead();
+      }catch(err){
+        setStatus("err", err instanceof Error ? err.message : String(err));
       }
     }
 
@@ -779,7 +811,7 @@
       state.players = [];
       state.winners = [];
 
-      els.inputText.value = "";
+      if (els.inputText) els.inputText.value = "";
       els.exportText.value = "";
       els.historyBody.innerHTML = "";
       els.hofBody.innerHTML = "";
@@ -791,7 +823,11 @@
       els.btnToggleHof.textContent = "Hall of Fame anzeigen";
 
       renderHeader();
-      setStatus(null, "Zurückgesetzt. Du kannst jetzt NFC lesen oder Text einfügen.");
+      setStatus(null, "Zurückgesetzt. Tippe auf „NFC lesen“.");
+      if (els.statusManual){
+        els.statusManual.classList.remove("err");
+        els.statusManual.textContent = "Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.";
+      }
     }
 
     function toggleHistory(){
@@ -808,29 +844,60 @@
     }
 
     // ----------------------------
-    // Web NFC (Read / Write)
+    // Web NFC
     // ----------------------------
-
     function hasWebNfc(){
       return ("NDEFReader" in window);
     }
+    function isSecureContextOk(){
+      return (location.protocol === "https:" || location.hostname === "localhost");
+    }
 
-    function updateNfcInfo(){
-      if (!hasWebNfc()){
-        els.nfcInfo.textContent = "Web NFC nicht verfügbar (nur Android Chrome/Edge, HTTPS).";
-        els.btnNfcRead.disabled = true;
-        els.btnNfcWrite.disabled = true;
-        els.btnNfcWrite2.disabled = true;
-        return;
+    function updateTopPanels(){
+      const nfcOk = hasWebNfc() && isSecureContextOk();
+
+      els.topNfcPanel.classList.toggle("hide", !nfcOk);
+      els.topManualPanel.classList.toggle("hide", nfcOk);
+
+      if (nfcOk){
+        els.nfcInfo.textContent = "Bereit. Handy entsperrt halten, NFC an, Chrome/Edge auf Android.";
+      }else{
+        // manual panel exists
       }
-      if (location.protocol !== "https:" && location.hostname !== "localhost"){
-        els.nfcInfo.textContent = "Web NFC erfordert HTTPS (oder localhost).";
-        els.btnNfcRead.disabled = true;
-        els.btnNfcWrite.disabled = true;
-        els.btnNfcWrite2.disabled = true;
-        return;
+    }
+
+    function extractTextFromNdefMessage(message){
+      for (const rec of message.records){
+        if (rec.recordType === "text" && typeof rec.data === "string"){
+          return rec.data;
+        }
       }
-      els.nfcInfo.textContent = "Web NFC verfügbar. Tipp: Handy entsperrt halten und Tag an die NFC-Antenne halten.";
+      for (const rec of message.records){
+        if (rec.recordType === "text" && rec.data){
+          const decoded = tryDecodeRecordData(rec);
+          if (decoded) return decoded;
+        }
+        if (rec.recordType === "mime" && rec.mediaType === "text/plain"){
+          const decoded = tryDecodeRecordData(rec);
+          if (decoded) return decoded;
+        }
+      }
+      return "";
+    }
+
+    function tryDecodeRecordData(rec){
+      try{
+        if (!rec.data) return "";
+        if (rec.data instanceof DataView){
+          return new TextDecoder("utf-8").decode(rec.data);
+        }
+        if (rec.data instanceof ArrayBuffer){
+          return new TextDecoder("utf-8").decode(new Uint8Array(rec.data));
+        }
+        return "";
+      }catch(_e){
+        return "";
+      }
     }
 
     async function nfcReadOnce(){
@@ -838,6 +905,11 @@
         setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar.");
         return;
       }
+      if (!isSecureContextOk()){
+        setStatus("err", "Web NFC erfordert HTTPS (oder localhost).");
+        return;
+      }
+
       try{
         const reader = new NDEFReader();
         setStatus("warn", "Bereit zum Lesen… halte den NFC-Tag an dein Gerät.");
@@ -847,9 +919,14 @@
           try{
             const text = extractTextFromNdefMessage(event.message);
             if (!text) throw new Error("Kein lesbarer Text-Record gefunden.");
-            els.inputText.value = text;
-            setStatus("ok", "NFC gelesen. Daten werden eingelesen…");
-            readInput();
+
+            // Direkt parsen & anzeigen (ohne sichtbares Eingabefeld)
+            const parsed = parseNfcText(text);
+            applyParsed(parsed);
+
+            setStatus("ok", "NFC gelesen und ausgewertet.");
+            renderAllAfterRead();
+
           }catch(e){
             setStatus("err", e instanceof Error ? e.message : String(e));
           }finally{
@@ -868,55 +945,7 @@
         reader.addEventListener("readingerror", onError, { once: true });
 
       }catch(err){
-        // NotAllowedError (NFC aus, Berechtigung), NotSupportedError, AbortError ...
         setStatus("err", `NFC Lesen fehlgeschlagen: ${err && err.message ? err.message : String(err)}`);
-      }
-    }
-
-    /**
-     * Extrahiert Text aus NDEFMessage.
-     * Unterstützt:
-     * - recordType "text"
-     * - recordType "mime" mit text/plain
-     * - fallback: versucht DataView/ArrayBuffer als UTF-8 zu decodieren
-     */
-    function extractTextFromNdefMessage(message){
-      // message.records: NDEFRecord[]
-      for (const rec of message.records){
-        // Standard Text Record
-        if (rec.recordType === "text" && typeof rec.data === "string"){
-          return rec.data;
-        }
-      }
-
-      for (const rec of message.records){
-        // In manchen Implementierungen ist rec.data ein DataView/ArrayBuffer
-        if (rec.recordType === "text" && rec.data){
-          const decoded = tryDecodeRecordData(rec);
-          if (decoded) return decoded;
-        }
-        if (rec.recordType === "mime" && rec.mediaType === "text/plain"){
-          const decoded = tryDecodeRecordData(rec);
-          if (decoded) return decoded;
-        }
-      }
-      return "";
-    }
-
-    function tryDecodeRecordData(rec){
-      try{
-        if (!rec.data) return "";
-        // rec.data kann DataView sein
-        if (rec.data instanceof DataView){
-          return new TextDecoder("utf-8").decode(rec.data);
-        }
-        // oder ArrayBuffer
-        if (rec.data instanceof ArrayBuffer){
-          return new TextDecoder("utf-8").decode(new Uint8Array(rec.data));
-        }
-        return "";
-      }catch(_e){
-        return "";
       }
     }
 
@@ -925,6 +954,11 @@
         setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar.");
         return;
       }
+      if (!isSecureContextOk()){
+        setStatus("err", "Web NFC erfordert HTTPS (oder localhost).");
+        return;
+      }
+
       const payload = (text || "").trim();
       if (!payload){
         setStatus("err", "Kein Text zum Schreiben vorhanden.");
@@ -934,11 +968,8 @@
       try{
         const writer = new NDEFReader();
         setStatus("warn", "Bereit zum Schreiben… halte den NFC-Tag an dein Gerät.");
-        // Wir schreiben als Text Record (lang=de)
         await writer.write({
-          records: [
-            { recordType: "text", data: payload, lang: "de" }
-          ]
+          records: [{ recordType: "text", data: payload, lang: "de" }]
         });
         setStatus("ok", "NFC erfolgreich beschrieben.");
       }catch(err){
@@ -949,40 +980,33 @@
     // ----------------------------
     // Events
     // ----------------------------
+    // manual
+    if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
+    if (els.btnClear) els.btnClear.addEventListener("click", resetAll);
 
-    els.btnRead.addEventListener("click", readInput);
+    // NFC
+    els.btnNfcRead.addEventListener("click", nfcReadOnce);
+    els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
+    els.btnClearTop.addEventListener("click", resetAll);
+
+    // after read
     els.btnAddWinner.addEventListener("click", addWinner);
-    els.btnCopy.addEventListener("click", copyExportToClipboard);
-    els.btnClear.addEventListener("click", resetAll);
     els.btnToggleHistory.addEventListener("click", toggleHistory);
     els.btnToggleHof.addEventListener("click", toggleHof);
-
-    // Ctrl/Cmd + Enter => Einlesen
-    els.inputText.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){
-        e.preventDefault();
-        readInput();
-      }
-    });
-
-    // Web NFC buttons
-    els.btnNfcRead.addEventListener("click", nfcReadOnce);
-    els.btnNfcWrite.addEventListener("click", async () => {
-      // schreibt den aktuellen Inhalt (wenn schon editiert, aber noch nicht geparst)
-      const text = els.exportText.value.trim() ? els.exportText.value : els.inputText.value;
-      await nfcWrite(text);
-    });
-    els.btnNfcWrite2.addEventListener("click", async () => {
-      await nfcWrite(els.exportText.value);
-    });
+    els.btnCopy.addEventListener("click", copyExportToClipboard);
+    els.btnReparse.addEventListener("click", reparseFromExport);
 
     (function init(){
       renderHeader();
       els.datePick.value = todayISO();
-      updateNfcInfo();
+      updateTopPanels();
 
-      if (!hasWebNfc()){
-        setStatus("warn", "Web NFC ist hier nicht verfügbar. Du kannst weiterhin manuell kopieren/einfügen.");
+      if (!(hasWebNfc() && isSecureContextOk())){
+        // initial manual status styling
+        if (els.statusManual){
+          els.statusManual.classList.remove("ok","warn");
+          els.statusManual.classList.remove("err");
+        }
       }
     })();
   </script>
