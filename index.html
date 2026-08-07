@@ -2,80 +2,987 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>NFC PWA Test</title>
-
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#111111" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFC Wanderpokal (Web NFC)</title>
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
-    h1 { margin: 0 0 8px; }
-    .meta { color:#444; margin-bottom: 12px; }
-    button { padding: 10px 14px; font-size: 16px; margin-right: 8px; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
-    pre { background:#0b0f14; color:#b7ffb7; padding:12px; border-radius:10px; overflow:auto; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; }
-    .badge { display:inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
-    .ok { background:#dcfce7; color:#166534; }
-    .bad { background:#fee2e2; color:#991b1b; }
-    .warn { background:#ffedd5; color:#9a3412; }
-    .small { font-size: 12px; color:#555; }
-    input[type="text"] { width: 100%; padding: 10px; font-size: 16px; }
+    :root{
+      --bg0:#07060a;
+      --bg1:#0b0a10;
+      --panel:#0f0e14;
+
+      --text:#f4f0e6;
+      --muted:#c8c1b2;
+
+      --line: rgba(227, 195, 120, 0.25);
+      --line2: rgba(227, 195, 120, 0.16);
+
+      --gold1:#f6e3a1;
+      --gold2:#d6b15c;
+      --gold3:#a67c2a;
+
+      --danger:#ff6b6b;
+      --ok:#42d39b;
+
+      --shadow: 0 10px 30px rgba(0,0,0,0.55);
+      --glow: 0 0 0 2px rgba(232,197,110,0.10), 0 0 20px rgba(232,197,110,0.08);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 0%, rgba(232,197,110,0.10), transparent 60%),
+        radial-gradient(900px 600px at 85% 15%, rgba(246,227,161,0.07), transparent 55%),
+        radial-gradient(900px 600px at 50% 110%, rgba(166,124,42,0.08), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
+
+    header{
+      position: relative;
+      padding: 16px 14px 18px;
+      margin: 6px 0 14px;
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)),
+        radial-gradient(900px 220px at 25% 0%, rgba(246,227,161,0.12), transparent 60%),
+        radial-gradient(800px 220px at 85% 30%, rgba(214,177,92,0.10), transparent 55%),
+        rgba(0,0,0,0.18);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    header:before{
+      content:"";
+      position:absolute;
+      left: 14px;
+      right: 14px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(246,227,161,0.6), rgba(214,177,92,0.35), transparent);
+      opacity: 0.8;
+    }
+
+    .headrow{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    h1{
+      margin:0;
+      font-weight: 820;
+      letter-spacing: 0.6px;
+      font-size: 28px;
+      line-height: 1.05;
+      background: linear-gradient(180deg, var(--gold1), var(--gold2) 55%, var(--gold3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.12));
+      color: var(--muted);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .dot{
+      width: 7px; height: 7px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--gold1), var(--gold2));
+      box-shadow: 0 0 0 2px rgba(232,197,110,0.12);
+      display:inline-block;
+    }
+
+    .panel{
+      background:
+        radial-gradient(900px 260px at 15% 0%, rgba(246,227,161,0.06), transparent 60%),
+        radial-gradient(800px 260px at 85% 0%, rgba(214,177,92,0.05), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.010)),
+        rgba(0,0,0,0.22);
+      border: 1px solid var(--line2);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 12px 0;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    textarea, input[type="date"], select{
+      width: 100%;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.10));
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+    }
+
+    textarea{
+      min-height: 180px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.35;
+      white-space: pre;
+    }
+
+    textarea:focus, input[type="date"]:focus, select:focus{
+      border-color: rgba(232,197,110,0.65);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), var(--glow);
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .row > .col{
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+
+    .btnbar{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button{
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.16));
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 760;
+      letter-spacing: 0.25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+      transition: transform 0.05s ease, border-color 0.15s ease, filter 0.15s ease;
+    }
+    button:hover{ border-color: rgba(232,197,110,0.65); filter: brightness(1.05); }
+    button:active{ transform: translateY(1px); }
+
+    button.primary{
+      border-color: rgba(232,197,110,0.72);
+      background:
+        linear-gradient(180deg, rgba(246,227,161,0.22), rgba(214,177,92,0.10)),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.20));
+      box-shadow: 0 12px 22px rgba(0,0,0,0.30), 0 0 0 1px rgba(232,197,110,0.12);
+    }
+
+    button.danger{
+      border-color: rgba(255,107,107,0.55);
+      background: linear-gradient(180deg, rgba(255,107,107,0.18), rgba(0,0,0,0.18));
+    }
+
+    .status{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line2);
+      background: rgba(0,0,0,0.18);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .status.ok{
+      border-color: rgba(66,211,155,0.35);
+      color: rgba(66,211,155,0.95);
+      background: rgba(66,211,155,0.07);
+    }
+    .status.err{
+      border-color: rgba(255,107,107,0.35);
+      color: rgba(255,107,107,0.95);
+      background: rgba(255,107,107,0.07);
+    }
+    .status.warn{
+      border-color: rgba(232,197,110,0.35);
+      color: rgba(246,227,161,0.95);
+      background: rgba(232,197,110,0.06);
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 860px){
+      .grid2{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .kv{
+      display:flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line2);
+      background:
+        radial-gradient(700px 140px at 20% 0%, rgba(246,227,161,0.06), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
+    }
+    .kv b{ color: var(--text); }
+    .kv span{ color: var(--muted); }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line2);
+      background: rgba(0,0,0,0.14);
+    }
+    th, td{
+      text-align:left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(227,195,120,0.14);
+      font-size: 13px;
+    }
+    th{
+      color: rgba(246,227,161,0.85);
+      font-weight: 800;
+      background: linear-gradient(180deg, rgba(246,227,161,0.07), rgba(0,0,0,0.10));
+      letter-spacing: 0.25px;
+    }
+    tr:last-child td{ border-bottom: none; }
+
+    .hide{ display:none !important; }
+    footer{
+      margin-top: 14px;
+      color: rgba(200,193,178,0.85);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+    .small{ font-size: 12px; color: var(--muted); }
   </style>
 </head>
+
 <body>
-  <h1>NFC PWA Test</h1>
-  <div class="meta">
-    Secure Context: <span id="secure" class="badge">?</span>
-    WebNFC (NDEFReader): <span id="nfc" class="badge">?</span>
-    Service Worker: <span id="sw" class="badge">?</span>
+  <div class="wrap">
+    <header>
+      <div class="headrow">
+        <h1 id="cupName">Wanderpokal</h1>
+        <span class="pill" id="cupIdPill"><span class="dot"></span><span>kein Pokal</span></span>
+      </div>
+    </header>
+
+    <section class="panel">
+      <label for="inputText">NFC-Daten</label>
+      <textarea id="inputText" spellcheck="false" placeholder="Du kannst manuell einfügen oder per Web NFC lesen…"></textarea>
+
+      <div class="btnbar">
+        <button class="primary" id="btnRead">Einlesen</button>
+
+        <!-- Web NFC -->
+        <button id="btnNfcRead">NFC lesen</button>
+        <button class="primary" id="btnNfcWrite">NFC schreiben</button>
+
+        <button class="danger" id="btnClear">Zurücksetzen</button>
+      </div>
+
+      <div id="status" class="status">Tipp: Auf Android (Chrome) kannst du direkt „NFC lesen“ / „NFC schreiben“ nutzen.</div>
+      <div class="small" id="nfcInfo"></div>
+    </section>
+
+    <section id="afterRead" class="panel hide">
+      <div class="grid2">
+        <div class="kv">
+          <div>
+            <div style="font-size:12px;color:var(--muted);">Letzter Gewinner</div>
+            <div style="font-size:14px;">
+              <b id="lastWinnerName">–</b>
+              <span id="lastWinnerMeta"></span>
+            </div>
+          </div>
+          <div id="lastWinnerDate">–</div>
+        </div>
+
+        <div class="kv">
+          <div>
+            <div style="font-size:12px;color:var(--muted);">Anzahl Spieler / Einträge</div>
+            <div style="font-size:14px;">
+              <b id="counts">–</b>
+            </div>
+          </div>
+          <div id="formatInfo">WP1</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 12px;">
+        <div class="col">
+          <label for="datePick">Turnierdatum</label>
+          <input id="datePick" type="date" />
+        </div>
+        <div class="col">
+          <label for="playerPick">Spieler</label>
+          <select id="playerPick"></select>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button class="primary" id="btnAddWinner">Gewinner hinzufügen</button>
+        <button id="btnToggleHistory">Historie anzeigen</button>
+        <button id="btnToggleHof">Hall of Fame anzeigen</button>
+      </div>
+
+      <div id="historyWrap" class="hide">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 140px;">Datum</th>
+              <th>Gewinner</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+
+      <div id="hofWrap" class="hide">
+        <table>
+          <thead>
+            <tr>
+              <th>Spieler</th>
+              <th style="width: 150px;">Turniersiege</th>
+            </tr>
+          </thead>
+          <tbody id="hofBody"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label for="exportText">Aktualisierte NFC-Daten (zum Zurückschreiben)</label>
+        <textarea id="exportText" spellcheck="false" readonly></textarea>
+        <div class="btnbar">
+          <button id="btnCopy">In Zwischenablage kopieren</button>
+          <button class="primary" id="btnNfcWrite2">Export direkt auf NFC schreiben</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Web NFC: Android Chrome/Edge · HTTPS erforderlich · iOS wird nicht unterstützt.
+    </footer>
   </div>
 
-  <div class="card">
-    <div class="row">
-      <button id="btnScan" disabled>NFC Scan starten</button>
-      <button id="btnStop" disabled>Stop</button>
-      <button id="btnClear">Log löschen</button>
-    </div>
-    <p class="small">
-      WebNFC funktioniert typischerweise nur auf Android (Chrome/Edge), über HTTPS und nur nach Nutzeraktion.
-      iOS/Safari: i. d. R. nicht unterstützt.
-    </p>
-  </div>
-
-  <div class="card">
-    <b>Letzter gelesener Text:</b>
-    <div style="margin-top:8px;">
-      <input id="lastText" type="text" placeholder="Noch nichts gelesen…" readonly />
-    </div>
-    <div class="small" style="margin-top:6px;">
-      Wird in <code>localStorage</code> gespeichert und bleibt auch offline erhalten.
-    </div>
-  </div>
-
-  <div class="card">
-    <b>Log</b>
-    <pre id="log"></pre>
-  </div>
-
-  <script src="./app.js"></script>
   <script>
-    // PWA / Offline: Service Worker registrieren
-    (async () => {
-      const swBadge = document.getElementById("sw");
-      try {
-        if ("serviceWorker" in navigator) {
-          await navigator.serviceWorker.register("./sw.js", { scope: "./" });
-          swBadge.textContent = "JA";
-          swBadge.className = "badge ok";
-        } else {
-          swBadge.textContent = "NEIN";
-          swBadge.className = "badge bad";
+    /** @typedef {{id:string, name:string, nick:string}} Player */
+    /** @typedef {{date:string, playerId:string}} Winner */
+
+    const $ = (sel) => document.querySelector(sel);
+    const HEADER_PLACEHOLDER = "Wanderpokal";
+
+    const els = {
+      cupName: $("#cupName"),
+      cupIdPill: $("#cupIdPill"),
+
+      inputText: $("#inputText"),
+      btnRead: $("#btnRead"),
+      btnClear: $("#btnClear"),
+      status: $("#status"),
+
+      btnNfcRead: $("#btnNfcRead"),
+      btnNfcWrite: $("#btnNfcWrite"),
+      btnNfcWrite2: $("#btnNfcWrite2"),
+      nfcInfo: $("#nfcInfo"),
+
+      afterRead: $("#afterRead"),
+      lastWinnerName: $("#lastWinnerName"),
+      lastWinnerMeta: $("#lastWinnerMeta"),
+      lastWinnerDate: $("#lastWinnerDate"),
+      counts: $("#counts"),
+      formatInfo: $("#formatInfo"),
+
+      datePick: $("#datePick"),
+      playerPick: $("#playerPick"),
+
+      btnAddWinner: $("#btnAddWinner"),
+      btnToggleHistory: $("#btnToggleHistory"),
+      historyWrap: $("#historyWrap"),
+      historyBody: $("#historyBody"),
+
+      btnToggleHof: $("#btnToggleHof"),
+      hofWrap: $("#hofWrap"),
+      hofBody: $("#hofBody"),
+
+      exportText: $("#exportText"),
+      btnCopy: $("#btnCopy"),
+    };
+
+    const state = {
+      cupId: null,
+      cupName: null,
+      /** @type {Player[]} */ players: [],
+      /** @type {Winner[]} */ winners: [],
+    };
+
+    function setStatus(kind, msg){
+      els.status.classList.remove("ok", "err", "warn");
+      if (kind) els.status.classList.add(kind);
+      els.status.textContent = msg;
+    }
+
+    function todayISO(){
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+
+    function isISODate(s){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+      const [y,m,d] = s.split("-").map(Number);
+      const dt = new Date(Date.UTC(y, m-1, d));
+      return dt.getUTCFullYear() === y && (dt.getUTCMonth()+1) === m && dt.getUTCDate() === d;
+    }
+
+    function normNewlines(text){
+      return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function playerById(id){
+      return state.players.find(p => p.id === id) || null;
+    }
+
+    function sortWinnersByDateAsc(){
+      state.winners.sort((a,b) => a.date.localeCompare(b.date));
+    }
+
+    function getLastWinner(){
+      if (state.winners.length === 0) return null;
+      sortWinnersByDateAsc();
+      return state.winners[state.winners.length - 1];
+    }
+
+    function displayCupTitle(){
+      els.cupName.textContent = state.cupName || HEADER_PLACEHOLDER;
+    }
+
+    function parseNfcText(text){
+      const src = normNewlines(text).trim();
+      if (!src) throw new Error("Eingabe ist leer.");
+
+      const lines = src.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length < 3) throw new Error("Zu wenige Zeilen. Erwartet Kopfzeile + Sektionen.");
+
+      const header = lines[0].split("|");
+      if (header.length < 2) throw new Error("Ungültige Kopfzeile. Erwartet: Pokal-ID|Pokalname");
+
+      const cupId = header[0].trim();
+      const cupName = header.slice(1).join("|").trim();
+      if (!cupId) throw new Error("Pokal-ID fehlt in Kopfzeile.");
+      if (!cupName) throw new Error("Pokalname fehlt in Kopfzeile.");
+
+      let section = null;
+      /** @type {Player[]} */ const players = [];
+      /** @type {Winner[]} */ const winners = [];
+
+      for (let i=1;i<lines.length;i++){
+        const line = lines[i];
+
+        if (line.toUpperCase() === "[PLAYER]"){ section = "PLAYER"; continue; }
+        if (line.toUpperCase() === "[WINNERS]"){ section = "WINNERS"; continue; }
+        if (!section) throw new Error(`Unerwartete Zeile vor Sektion: "${line}"`);
+
+        if (section === "PLAYER"){
+          const parts = line.split("|");
+          if (parts.length < 2) throw new Error(`Ungültige PLAYER-Zeile: "${line}"`);
+          const id = (parts[0] || "").trim();
+          const name = (parts[1] || "").trim();
+          const nick = (parts[2] || "").trim();
+          if (!id || !name) throw new Error(`PLAYER unvollständig: "${line}"`);
+          if (players.some(p => p.id === id)) throw new Error(`Doppelte Spieler-ID: ${id}`);
+          players.push({ id, name, nick });
+          continue;
         }
-      } catch (e) {
-        swBadge.textContent = "FEHLER";
-        swBadge.className = "badge bad";
+
+        if (section === "WINNERS"){
+          const m = line.match(/^(\d{4}-\d{2}-\d{2})\s*:\s*([A-Za-z0-9_-]+)$/);
+          if (!m) throw new Error(`Ungültige WINNERS-Zeile: "${line}"`);
+          const date = m[1];
+          const playerId = m[2];
+          if (!isISODate(date)) throw new Error(`Ungültiges Datum: "${date}"`);
+          winners.push({ date, playerId });
+          continue;
+        }
+      }
+
+      if (players.length === 0) throw new Error("Keine Spieler gefunden (Sektion [PLAYER]).");
+
+      const unknown = winners.filter(w => !players.some(p => p.id === w.playerId));
+      if (unknown.length){
+        const ids = Array.from(new Set(unknown.map(w => w.playerId))).join(", ");
+        throw new Error(`WINNERS enthält unbekannte Spieler-IDs: ${ids}`);
+      }
+
+      winners.sort((a,b) => a.date.localeCompare(b.date));
+      return { cupId, cupName, players, winners };
+    }
+
+    function buildExportText(){
+      const header = `${state.cupId}|${state.cupName}`;
+
+      const playerLines = state.players
+        .slice()
+        .sort((a,b) => a.id.localeCompare(b.id))
+        .map(p => `${p.id}|${p.name}|${p.nick || ""}`);
+
+      sortWinnersByDateAsc();
+      const winnerLines = state.winners.map(w => `${w.date}:${w.playerId}`);
+
+      return [
+        header,
+        "[PLAYER]",
+        ...playerLines,
+        "[WINNERS]",
+        ...winnerLines
+      ].join("\n").trim() + "\n";
+    }
+
+    function renderHeader(){
+      displayCupTitle();
+
+      const spans = els.cupIdPill.querySelectorAll("span");
+      const textSpan = spans[1] || els.cupIdPill;
+      textSpan.textContent = state.cupId || "kein Pokal";
+
+      els.formatInfo.textContent = state.cupId || "WP1";
+    }
+
+    function renderPlayersDropdown(){
+      els.playerPick.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      for (const p of state.players){
+        const opt = document.createElement("option");
+        opt.value = p.id; // intern
+        const nick = p.nick ? ` (${p.nick})` : "";
+        opt.textContent = `${p.name}${nick}`; // ohne ID
+        frag.appendChild(opt);
+      }
+      els.playerPick.appendChild(frag);
+    }
+
+    function renderLastWinner(){
+      const last = getLastWinner();
+      if (!last){
+        els.lastWinnerName.textContent = "–";
+        els.lastWinnerMeta.textContent = " (noch kein Eintrag)";
+        els.lastWinnerDate.textContent = "–";
+        return;
+      }
+      const p = playerById(last.playerId);
+      const nick = p?.nick ? ` (${p.nick})` : "";
+      els.lastWinnerName.textContent = p ? `${p.name}${nick}` : "Unbekannter Spieler";
+      els.lastWinnerMeta.textContent = "";
+      els.lastWinnerDate.textContent = last.date;
+    }
+
+    function renderCounts(){
+      els.counts.textContent = `${state.players.length} Spieler / ${state.winners.length} Einträge`;
+    }
+
+    function renderHistoryTable(){
+      sortWinnersByDateAsc();
+      els.historyBody.innerHTML = "";
+
+      if (state.winners.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="2" style="color:var(--muted);">Keine Historie vorhanden.</td>`;
+        els.historyBody.appendChild(tr);
+        return;
+      }
+
+      for (const w of state.winners){
+        const p = playerById(w.playerId);
+        const name = p
+          ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}`
+          : "Unbekannter Spieler";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(w.date)}</td>
+          <td>${name}</td>
+        `;
+        els.historyBody.appendChild(tr);
+      }
+    }
+
+    function renderHallOfFame(){
+      const winCount = new Map();
+      for (const w of state.winners){
+        winCount.set(w.playerId, (winCount.get(w.playerId) || 0) + 1);
+      }
+
+      const rows = state.players.map(p => ({
+        id: p.id,
+        name: p.name,
+        nick: p.nick || "",
+        wins: winCount.get(p.id) || 0
+      }))
+      .sort((a,b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        return (a.name || "").localeCompare((b.name || ""), "de");
+      });
+
+      els.hofBody.innerHTML = "";
+
+      const anyWins = rows.some(r => r.wins > 0);
+      if (!anyWins){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="2" style="color:var(--muted);">Noch keine Turniersiege vorhanden.</td>`;
+        els.hofBody.appendChild(tr);
+        return;
+      }
+
+      for (const r of rows){
+        if (r.wins === 0) continue;
+        const nick = r.nick ? ` (${escapeHtml(r.nick)})` : "";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(r.name)}${nick}</td>
+          <td><b>${r.wins}</b></td>
+        `;
+        els.hofBody.appendChild(tr);
+      }
+    }
+
+    function renderExport(){
+      els.exportText.value = buildExportText();
+    }
+
+    function renderAllAfterRead(){
+      els.afterRead.classList.remove("hide");
+      els.datePick.value = todayISO();
+
+      renderHeader();
+      renderPlayersDropdown();
+      renderLastWinner();
+      renderCounts();
+      renderHistoryTable();
+      renderHallOfFame();
+      renderExport();
+    }
+
+    function readInput(){
+      try{
+        const parsed = parseNfcText(els.inputText.value);
+        state.cupId = parsed.cupId;
+        state.cupName = parsed.cupName;
+        state.players = parsed.players;
+        state.winners = parsed.winners;
+
+        setStatus("ok", "Daten erfolgreich eingelesen.");
+        renderAllAfterRead();
+      }catch(err){
+        setStatus("err", err instanceof Error ? err.message : String(err));
+        els.afterRead.classList.add("hide");
+        state.cupId = null; state.cupName = null;
+        renderHeader();
+      }
+    }
+
+    function addWinner(){
+      const date = els.datePick.value.trim();
+      const playerId = els.playerPick.value;
+
+      if (!isISODate(date)){
+        setStatus("err", "Bitte ein gültiges Turnierdatum auswählen.");
+        return;
+      }
+      if (!playerId){
+        setStatus("err", "Bitte einen Spieler auswählen.");
+        return;
+      }
+
+      const exists = state.winners.some(w => w.date === date && w.playerId === playerId);
+      if (exists){
+        setStatus("err", "Dieser Gewinner ist für dieses Datum bereits eingetragen.");
+        return;
+      }
+
+      state.winners.push({ date, playerId });
+      sortWinnersByDateAsc();
+
+      renderLastWinner();
+      renderCounts();
+      renderHistoryTable();
+      renderHallOfFame();
+      renderExport();
+
+      const p = playerById(playerId);
+      setStatus("ok", `Gewinner hinzugefügt: ${p ? p.name : "Unbekannter Spieler"} am ${date}.`);
+    }
+
+    async function copyExportToClipboard(){
+      const text = els.exportText.value;
+      if (!text.trim()){
+        setStatus("err", "Kein Exporttext vorhanden.");
+        return;
+      }
+
+      try{
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(text);
+          setStatus("ok", "Exporttext wurde in die Zwischenablage kopiert.");
+          return;
+        }
+      }catch(_e){}
+
+      try{
+        els.exportText.focus();
+        els.exportText.select();
+        const ok = document.execCommand("copy");
+        if (ok) setStatus("ok", "Exporttext wurde in die Zwischenablage kopiert.");
+        else setStatus("err", "Kopieren nicht erlaubt. Bitte manuell markieren und kopieren.");
+      }catch(_e){
+        setStatus("err", "Kopieren nicht erlaubt. Bitte manuell markieren und kopieren.");
+      }
+    }
+
+    function resetAll(){
+      state.cupId = null;
+      state.cupName = null;
+      state.players = [];
+      state.winners = [];
+
+      els.inputText.value = "";
+      els.exportText.value = "";
+      els.historyBody.innerHTML = "";
+      els.hofBody.innerHTML = "";
+
+      els.afterRead.classList.add("hide");
+      els.historyWrap.classList.add("hide");
+      els.hofWrap.classList.add("hide");
+      els.btnToggleHistory.textContent = "Historie anzeigen";
+      els.btnToggleHof.textContent = "Hall of Fame anzeigen";
+
+      renderHeader();
+      setStatus(null, "Zurückgesetzt. Du kannst jetzt NFC lesen oder Text einfügen.");
+    }
+
+    function toggleHistory(){
+      const isHidden = els.historyWrap.classList.contains("hide");
+      els.historyWrap.classList.toggle("hide");
+      els.btnToggleHistory.textContent = isHidden ? "Historie ausblenden" : "Historie anzeigen";
+    }
+
+    function toggleHof(){
+      const isHidden = els.hofWrap.classList.contains("hide");
+      els.hofWrap.classList.toggle("hide");
+      els.btnToggleHof.textContent = isHidden ? "Hall of Fame ausblenden" : "Hall of Fame anzeigen";
+      if (!els.hofWrap.classList.contains("hide")) renderHallOfFame();
+    }
+
+    // ----------------------------
+    // Web NFC (Read / Write)
+    // ----------------------------
+
+    function hasWebNfc(){
+      return ("NDEFReader" in window);
+    }
+
+    function updateNfcInfo(){
+      if (!hasWebNfc()){
+        els.nfcInfo.textContent = "Web NFC nicht verfügbar (nur Android Chrome/Edge, HTTPS).";
+        els.btnNfcRead.disabled = true;
+        els.btnNfcWrite.disabled = true;
+        els.btnNfcWrite2.disabled = true;
+        return;
+      }
+      if (location.protocol !== "https:" && location.hostname !== "localhost"){
+        els.nfcInfo.textContent = "Web NFC erfordert HTTPS (oder localhost).";
+        els.btnNfcRead.disabled = true;
+        els.btnNfcWrite.disabled = true;
+        els.btnNfcWrite2.disabled = true;
+        return;
+      }
+      els.nfcInfo.textContent = "Web NFC verfügbar. Tipp: Handy entsperrt halten und Tag an die NFC-Antenne halten.";
+    }
+
+    async function nfcReadOnce(){
+      if (!hasWebNfc()){
+        setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar.");
+        return;
+      }
+      try{
+        const reader = new NDEFReader();
+        setStatus("warn", "Bereit zum Lesen… halte den NFC-Tag an dein Gerät.");
+        await reader.scan();
+
+        const onReading = (event) => {
+          try{
+            const text = extractTextFromNdefMessage(event.message);
+            if (!text) throw new Error("Kein lesbarer Text-Record gefunden.");
+            els.inputText.value = text;
+            setStatus("ok", "NFC gelesen. Daten werden eingelesen…");
+            readInput();
+          }catch(e){
+            setStatus("err", e instanceof Error ? e.message : String(e));
+          }finally{
+            reader.removeEventListener("reading", onReading);
+            reader.removeEventListener("readingerror", onError);
+          }
+        };
+
+        const onError = () => {
+          setStatus("err", "Lesefehler. Bitte erneut versuchen.");
+          reader.removeEventListener("reading", onReading);
+          reader.removeEventListener("readingerror", onError);
+        };
+
+        reader.addEventListener("reading", onReading, { once: true });
+        reader.addEventListener("readingerror", onError, { once: true });
+
+      }catch(err){
+        // NotAllowedError (NFC aus, Berechtigung), NotSupportedError, AbortError ...
+        setStatus("err", `NFC Lesen fehlgeschlagen: ${err && err.message ? err.message : String(err)}`);
+      }
+    }
+
+    /**
+     * Extrahiert Text aus NDEFMessage.
+     * Unterstützt:
+     * - recordType "text"
+     * - recordType "mime" mit text/plain
+     * - fallback: versucht DataView/ArrayBuffer als UTF-8 zu decodieren
+     */
+    function extractTextFromNdefMessage(message){
+      // message.records: NDEFRecord[]
+      for (const rec of message.records){
+        // Standard Text Record
+        if (rec.recordType === "text" && typeof rec.data === "string"){
+          return rec.data;
+        }
+      }
+
+      for (const rec of message.records){
+        // In manchen Implementierungen ist rec.data ein DataView/ArrayBuffer
+        if (rec.recordType === "text" && rec.data){
+          const decoded = tryDecodeRecordData(rec);
+          if (decoded) return decoded;
+        }
+        if (rec.recordType === "mime" && rec.mediaType === "text/plain"){
+          const decoded = tryDecodeRecordData(rec);
+          if (decoded) return decoded;
+        }
+      }
+      return "";
+    }
+
+    function tryDecodeRecordData(rec){
+      try{
+        if (!rec.data) return "";
+        // rec.data kann DataView sein
+        if (rec.data instanceof DataView){
+          return new TextDecoder("utf-8").decode(rec.data);
+        }
+        // oder ArrayBuffer
+        if (rec.data instanceof ArrayBuffer){
+          return new TextDecoder("utf-8").decode(new Uint8Array(rec.data));
+        }
+        return "";
+      }catch(_e){
+        return "";
+      }
+    }
+
+    async function nfcWrite(text){
+      if (!hasWebNfc()){
+        setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar.");
+        return;
+      }
+      const payload = (text || "").trim();
+      if (!payload){
+        setStatus("err", "Kein Text zum Schreiben vorhanden.");
+        return;
+      }
+
+      try{
+        const writer = new NDEFReader();
+        setStatus("warn", "Bereit zum Schreiben… halte den NFC-Tag an dein Gerät.");
+        // Wir schreiben als Text Record (lang=de)
+        await writer.write({
+          records: [
+            { recordType: "text", data: payload, lang: "de" }
+          ]
+        });
+        setStatus("ok", "NFC erfolgreich beschrieben.");
+      }catch(err){
+        setStatus("err", `NFC Schreiben fehlgeschlagen: ${err && err.message ? err.message : String(err)}`);
+      }
+    }
+
+    // ----------------------------
+    // Events
+    // ----------------------------
+
+    els.btnRead.addEventListener("click", readInput);
+    els.btnAddWinner.addEventListener("click", addWinner);
+    els.btnCopy.addEventListener("click", copyExportToClipboard);
+    els.btnClear.addEventListener("click", resetAll);
+    els.btnToggleHistory.addEventListener("click", toggleHistory);
+    els.btnToggleHof.addEventListener("click", toggleHof);
+
+    // Ctrl/Cmd + Enter => Einlesen
+    els.inputText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+        e.preventDefault();
+        readInput();
+      }
+    });
+
+    // Web NFC buttons
+    els.btnNfcRead.addEventListener("click", nfcReadOnce);
+    els.btnNfcWrite.addEventListener("click", async () => {
+      // schreibt den aktuellen Inhalt (wenn schon editiert, aber noch nicht geparst)
+      const text = els.exportText.value.trim() ? els.exportText.value : els.inputText.value;
+      await nfcWrite(text);
+    });
+    els.btnNfcWrite2.addEventListener("click", async () => {
+      await nfcWrite(els.exportText.value);
+    });
+
+    (function init(){
+      renderHeader();
+      els.datePick.value = todayISO();
+      updateNfcInfo();
+
+      if (!hasWebNfc()){
+        setStatus("warn", "Web NFC ist hier nicht verfügbar. Du kannst weiterhin manuell kopieren/einfügen.");
       }
     })();
   </script>
