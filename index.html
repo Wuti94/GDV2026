@@ -169,13 +169,18 @@
       margin-top: 10px;
     }
     .btnBig{
-      width: min(520px, 100%);
+      width: min(720px, 100%);
+      padding: 18px 16px;
+      font-size: 18px;
+      border-radius: 16px;
+    }
+
+    /* Manual "Einlesen" full-width */
+    .btnFull{
+      width: 100%;
       padding: 14px 14px;
       font-size: 16px;
       border-radius: 14px;
-    }
-    .btnSmall{
-      width: min(340px, 100%);
     }
 
     label{
@@ -317,11 +322,9 @@
 
       <div class="nfcActions">
         <button id="btnNfcRead" class="primary btnBig">Pokal auslesen</button>
-        <button id="btnClearTop" class="danger btnSmall">Zurücksetzen</button>
       </div>
 
       <div id="status" class="status">Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.</div>
-      <!-- Hinweistext unter den Buttons bewusst entfernt -->
     </section>
 
     <!-- TOP: MANUAL view (wenn Web NFC NICHT verfügbar) -->
@@ -330,8 +333,7 @@
       <textarea id="inputText" spellcheck="false" placeholder="Hier NFC-Text einfügen…"></textarea>
 
       <div class="btnbar">
-        <button class="primary" id="btnRead">Einlesen</button>
-        <button class="danger" id="btnClear">Zurücksetzen</button>
+        <button class="primary btnFull" id="btnRead">Einlesen</button>
       </div>
 
       <div id="statusManual" class="status">Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.</div>
@@ -439,13 +441,11 @@
       // manual
       inputText: $("#inputText"),
       btnRead: $("#btnRead"),
-      btnClear: $("#btnClear"),
       statusManual: $("#statusManual"),
 
       // nfc
       btnNfcRead: $("#btnNfcRead"),
       btnNfcWrite: $("#btnNfcWrite"),
-      btnClearTop: $("#btnClearTop"),
       status: $("#status"),
 
       // after read
@@ -809,45 +809,6 @@
       }
     }
 
-    function resetAll(){
-      state.cupId = null;
-      state.cupName = null;
-      state.players = [];
-      state.winners = [];
-
-      if (els.inputText) els.inputText.value = "";
-      els.exportText.value = "";
-      els.historyBody.innerHTML = "";
-      els.hofBody.innerHTML = "";
-
-      els.afterRead.classList.add("hide");
-      els.historyWrap.classList.add("hide");
-      els.hofWrap.classList.add("hide");
-      els.btnToggleHistory.textContent = "Historie anzeigen";
-      els.btnToggleHof.textContent = "Hall of Fame anzeigen";
-
-      renderHeader();
-      setStatus(null, "Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.");
-
-      if (els.statusManual){
-        els.statusManual.classList.remove("err");
-        els.statusManual.textContent = "Web NFC ist nicht verfügbar. Bitte Tag-Inhalt manuell einfügen und „Einlesen“ klicken.";
-      }
-    }
-
-    function toggleHistory(){
-      const isHidden = els.historyWrap.classList.contains("hide");
-      els.historyWrap.classList.toggle("hide");
-      els.btnToggleHistory.textContent = isHidden ? "Historie ausblenden" : "Historie anzeigen";
-    }
-
-    function toggleHof(){
-      const isHidden = els.hofWrap.classList.contains("hide");
-      els.hofWrap.classList.toggle("hide");
-      els.btnToggleHof.textContent = isHidden ? "Hall of Fame ausblenden" : "Hall of Fame anzeigen";
-      if (!els.hofWrap.classList.contains("hide")) renderHallOfFame();
-    }
-
     // Web NFC
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
@@ -964,15 +925,23 @@
 
     // Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
-    if (els.btnClear) els.btnClear.addEventListener("click", resetAll);
 
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
-    els.btnClearTop.addEventListener("click", resetAll);
 
     els.btnAddWinner.addEventListener("click", addWinner);
-    els.btnToggleHistory.addEventListener("click", toggleHistory);
-    els.btnToggleHof.addEventListener("click", toggleHof);
+    els.btnToggleHistory.addEventListener("click", () => {
+      const isHidden = els.historyWrap.classList.contains("hide");
+      els.historyWrap.classList.toggle("hide");
+      els.btnToggleHistory.textContent = isHidden ? "Historie ausblenden" : "Historie anzeigen";
+    });
+    els.btnToggleHof.addEventListener("click", () => {
+      const isHidden = els.hofWrap.classList.contains("hide");
+      els.hofWrap.classList.toggle("hide");
+      els.btnToggleHof.textContent = isHidden ? "Hall of Fame ausblenden" : "Hall of Fame anzeigen";
+      if (!els.hofWrap.classList.contains("hide")) renderHallOfFame();
+    });
+
     els.btnCopy.addEventListener("click", copyExportToClipboard);
     els.btnReparse.addEventListener("click", reparseFromExport);
 
