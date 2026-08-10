@@ -321,6 +321,7 @@
         <div class="btnbar">
           <button class="primary" id="btnToggleHistory">Historie anzeigen</button>
           <button class="primary" id="btnToggleMembers">Mitglieder anzeigen</button>
+          <button class="primary" id="btnToggleTournament">Neues Turnier erfassen</button>
         </div>
       </div>
 
@@ -334,7 +335,7 @@
         </table>
       </div>
 
-      <!-- Mitglieder + Siege (zusammengeführt) -->
+      <!-- Mitglieder + Siege -->
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
@@ -371,21 +372,23 @@
         </div>
       </div>
 
-      <!-- Turnier -->
-      <div class="subpanel">
-        <div class="row">
-          <div class="col">
-            <label for="datePick">Turnierdatum</label>
-            <input id="datePick" type="date" />
+      <!-- Turnier erfassen (neu: einklappbar) -->
+      <div id="tournamentWrap" class="hide">
+        <div class="subpanel">
+          <div class="row">
+            <div class="col">
+              <label for="datePick">Turnierdatum</label>
+              <input id="datePick" type="date" />
+            </div>
+            <div class="col">
+              <label for="playerPick">Gewinner</label>
+              <select id="playerPick"></select>
+            </div>
           </div>
-          <div class="col">
-            <label for="playerPick">Gewinner</label>
-            <select id="playerPick"></select>
-          </div>
-        </div>
 
-        <div class="btnbar">
-          <button class="primary btnWide" id="btnAddWinner">Gewinner hinzufügen</button>
+          <div class="btnbar">
+            <button class="primary btnWide" id="btnAddWinner">Gewinner hinzufügen</button>
+          </div>
         </div>
       </div>
 
@@ -443,6 +446,8 @@
       memJoin: $("#memJoin"),
       btnAddMember: $("#btnAddMember"),
 
+      btnToggleTournament: $("#btnToggleTournament"),
+      tournamentWrap: $("#tournamentWrap"),
       datePick: $("#datePick"),
       playerPick: $("#playerPick"),
       btnAddWinner: $("#btnAddWinner"),
@@ -515,7 +520,6 @@
       els.cupIdPill.textContent = state.cupId ? state.cupId : "–";
     }
 
-    // ---- ID generation (P1, P2, ...)
     function nextPlayerId(){
       let max = 0;
       for (const p of state.players){
@@ -525,7 +529,6 @@
       return "P" + (max + 1);
     }
 
-    // ---- Parser / Serializer
     function parseNfcText(text){
       const src = normNewlines(text).trim();
       if (!src) throw new Error("Eingabe ist leer.");
@@ -553,14 +556,13 @@
         if (!section) throw new Error(`Unerwartete Zeile vor Sektion: "${line}"`);
 
         if (section === "PLAYER"){
-          // ID|Name|Nick|JoinDate
           const parts = line.split("|");
           if (parts.length < 2) throw new Error(`Ungültige PLAYER-Zeile: "${line}"`);
 
           const id = (parts[0] || "").trim();
           const name = (parts[1] || "").trim();
           const nick = (parts[2] || "").trim();
-          const joinDate = (parts[3] || "").trim(); // may be empty
+          const joinDate = (parts[3] || "").trim();
 
           if (!id || !name) throw new Error(`PLAYER unvollständig: "${line}"`);
           if (players.some(p => p.id === id)) throw new Error(`Doppelte Spieler-ID: ${id}`);
@@ -583,7 +585,6 @@
 
       if (players.length === 0) throw new Error("Keine Spieler gefunden (Sektion [PLAYER]).");
 
-      // Winner IDs must exist
       const unknown = winners.filter(w => !players.some(p => p.id === w.playerId));
       if (unknown.length){
         const ids = Array.from(new Set(unknown.map(w => w.playerId))).join(", ");
@@ -597,7 +598,6 @@
     function buildExportText(){
       const header = `${state.cupId}|${state.cupName}`;
 
-      // Sort players by numeric suffix if possible, else by id
       const players = state.players.slice().sort((a,b) => {
         const ma = String(a.id).match(/^P(\d+)$/i);
         const mb = String(b.id).match(/^P(\d+)$/i);
@@ -627,7 +627,6 @@
       return winCount;
     }
 
-    // ---- Rendering
     function renderHeader(){
       displayCupTitle();
       renderCupIdPill();
@@ -732,22 +731,17 @@
       state.winners = parsed.winners;
     }
 
-    // ---- Actions
     function addMember(){
       const name = (els.memName.value || "").trim();
       const nick = (els.memNick.value || "").trim();
-      const join = (els.memJoin.value || "").trim(); // ISO or empty
+      const join = (els.memJoin.value || "").trim();
 
       if (!name){
         setStatus("err", "Bitte einen Namen für das Mitglied eingeben.");
         return;
       }
-      if (join && !/^\d{4}-\d{2}-\d{2}$/.test(join)){
-        setStatus("err", "Bitte ein gültiges Beitrittsdatum wählen (oder leer lassen).");
-        return;
-      }
       if (join && !isISODate(join)){
-        setStatus("err", "Bitte ein gültiges Beitrittsdatum wählen.");
+        setStatus("err", "Bitte ein gültiges Beitrittsdatum wählen (oder leer lassen).");
         return;
       }
 
@@ -782,7 +776,7 @@
       renderLastWinner();
       renderCounts();
       renderHistoryTable();
-      renderMembersTable(); // Siege aktualisieren
+      renderMembersTable();
       renderExport();
 
       setStatus("ok", "Gewinner hinzugefügt.");
@@ -827,7 +821,7 @@
       }
     }
 
-    // ---- Web NFC
+    // Web NFC
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
     function updateTopPanels(){
@@ -922,7 +916,7 @@
       });
     }
 
-    // ---- Events
+    // Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
@@ -941,6 +935,12 @@
       els.membersWrap.classList.toggle("hide");
       els.btnToggleMembers.textContent = isHidden ? "Mitglieder ausblenden" : "Mitglieder anzeigen";
       if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
+    });
+
+    els.btnToggleTournament.addEventListener("click", () => {
+      const isHidden = els.tournamentWrap.classList.contains("hide");
+      els.tournamentWrap.classList.toggle("hide");
+      els.btnToggleTournament.textContent = isHidden ? "Turnier ausblenden" : "Neues Turnier erfassen";
     });
 
     els.btnCopy.addEventListener("click", copyExportToClipboard);
