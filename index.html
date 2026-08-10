@@ -173,7 +173,7 @@
       margin: 0 0 6px;
     }
 
-    textarea, input[type="date"], select{
+    textarea, input[type="date"], select, input[type="text"]{
       width: 100%;
       border: 1px solid var(--line);
       background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.10));
@@ -192,7 +192,7 @@
       line-height: 1.35;
       white-space: pre;
     }
-    textarea:focus, input[type="date"]:focus, select:focus{
+    textarea:focus, input[type="date"]:focus, select:focus, input[type="text"]:focus{
       border-color: rgba(232,197,110,0.65);
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), var(--glow);
     }
@@ -296,6 +296,7 @@
     </section>
 
     <section id="afterRead" class="panel hide">
+      <!-- Übersicht -->
       <div class="subpanel">
         <div class="grid2">
           <div class="kv">
@@ -319,10 +320,11 @@
 
         <div class="btnbar">
           <button class="primary" id="btnToggleHistory">Historie anzeigen</button>
-          <button class="primary" id="btnToggleHof">Hall of Fame anzeigen</button>
+          <button class="primary" id="btnToggleMembers">Mitglieder anzeigen</button>
         </div>
       </div>
 
+      <!-- Historie -->
       <div id="historyWrap" class="hide">
         <table>
           <thead>
@@ -332,15 +334,44 @@
         </table>
       </div>
 
-      <div id="hofWrap" class="hide">
-        <table>
-          <thead>
-            <tr><th>Spieler</th><th style="width: 150px;">Turniersiege</th></tr>
-          </thead>
-          <tbody id="hofBody"></tbody>
-        </table>
+      <!-- Mitglieder + Siege (zusammengeführt) -->
+      <div id="membersWrap" class="hide">
+        <div class="subpanel">
+          <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th style="width: 110px;">Siege</th>
+                <th style="width: 180px;">Beitritt</th>
+              </tr>
+            </thead>
+            <tbody id="membersBody"></tbody>
+          </table>
+
+          <div class="row" style="margin-top:12px;">
+            <div class="col">
+              <label for="memName">Name</label>
+              <input id="memName" type="text" placeholder="Max Mustermann" />
+            </div>
+            <div class="col">
+              <label for="memNick">Spitzname (optional)</label>
+              <input id="memNick" type="text" placeholder="Max" />
+            </div>
+            <div class="col">
+              <label for="memJoin">Beitrittsdatum</label>
+              <input id="memJoin" type="date" />
+            </div>
+          </div>
+
+          <div class="btnbar">
+            <button class="primary btnWide" id="btnAddMember">Mitglied hinzufügen</button>
+          </div>
+        </div>
       </div>
 
+      <!-- Turnier -->
       <div class="subpanel">
         <div class="row">
           <div class="col">
@@ -358,6 +389,7 @@
         </div>
       </div>
 
+      <!-- Export -->
       <div class="subpanel">
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
@@ -371,7 +403,7 @@
   </div>
 
   <script>
-    /** @typedef {{id:string, name:string, nick:string}} Player */
+    /** @typedef {{id:string, name:string, nick:string, joinDate:string}} Player */
     /** @typedef {{date:string, playerId:string}} Winner */
 
     const $ = (sel) => document.querySelector(sel);
@@ -399,18 +431,21 @@
       lastWinnerDate: $("#lastWinnerDate"),
       counts: $("#counts"),
 
-      datePick: $("#datePick"),
-      playerPick: $("#playerPick"),
-
-      btnAddWinner: $("#btnAddWinner"),
-
       btnToggleHistory: $("#btnToggleHistory"),
       historyWrap: $("#historyWrap"),
       historyBody: $("#historyBody"),
 
-      btnToggleHof: $("#btnToggleHof"),
-      hofWrap: $("#hofWrap"),
-      hofBody: $("#hofBody"),
+      btnToggleMembers: $("#btnToggleMembers"),
+      membersWrap: $("#membersWrap"),
+      membersBody: $("#membersBody"),
+      memName: $("#memName"),
+      memNick: $("#memNick"),
+      memJoin: $("#memJoin"),
+      btnAddMember: $("#btnAddMember"),
+
+      datePick: $("#datePick"),
+      playerPick: $("#playerPick"),
+      btnAddWinner: $("#btnAddWinner"),
 
       exportText: $("#exportText"),
       btnCopy: $("#btnCopy"),
@@ -480,6 +515,17 @@
       els.cupIdPill.textContent = state.cupId ? state.cupId : "–";
     }
 
+    // ---- ID generation (P1, P2, ...)
+    function nextPlayerId(){
+      let max = 0;
+      for (const p of state.players){
+        const m = String(p.id).match(/^P(\d+)$/i);
+        if (m) max = Math.max(max, Number(m[1]));
+      }
+      return "P" + (max + 1);
+    }
+
+    // ---- Parser / Serializer
     function parseNfcText(text){
       const src = normNewlines(text).trim();
       if (!src) throw new Error("Eingabe ist leer.");
@@ -507,14 +553,20 @@
         if (!section) throw new Error(`Unerwartete Zeile vor Sektion: "${line}"`);
 
         if (section === "PLAYER"){
+          // ID|Name|Nick|JoinDate
           const parts = line.split("|");
           if (parts.length < 2) throw new Error(`Ungültige PLAYER-Zeile: "${line}"`);
+
           const id = (parts[0] || "").trim();
           const name = (parts[1] || "").trim();
           const nick = (parts[2] || "").trim();
+          const joinDate = (parts[3] || "").trim(); // may be empty
+
           if (!id || !name) throw new Error(`PLAYER unvollständig: "${line}"`);
           if (players.some(p => p.id === id)) throw new Error(`Doppelte Spieler-ID: ${id}`);
-          players.push({ id, name, nick });
+          if (joinDate && !isISODate(joinDate)) throw new Error(`Ungültiges Beitrittsdatum bei ${id}: "${joinDate}"`);
+
+          players.push({ id, name, nick, joinDate });
           continue;
         }
 
@@ -531,6 +583,7 @@
 
       if (players.length === 0) throw new Error("Keine Spieler gefunden (Sektion [PLAYER]).");
 
+      // Winner IDs must exist
       const unknown = winners.filter(w => !players.some(p => p.id === w.playerId));
       if (unknown.length){
         const ids = Array.from(new Set(unknown.map(w => w.playerId))).join(", ");
@@ -544,10 +597,15 @@
     function buildExportText(){
       const header = `${state.cupId}|${state.cupName}`;
 
-      const playerLines = state.players
-        .slice()
-        .sort((a,b) => a.id.localeCompare(b.id))
-        .map(p => `${p.id}|${p.name}|${p.nick || ""}`);
+      // Sort players by numeric suffix if possible, else by id
+      const players = state.players.slice().sort((a,b) => {
+        const ma = String(a.id).match(/^P(\d+)$/i);
+        const mb = String(b.id).match(/^P(\d+)$/i);
+        if (ma && mb) return Number(ma[1]) - Number(mb[1]);
+        return String(a.id).localeCompare(String(b.id));
+      });
+
+      const playerLines = players.map(p => `${p.id}|${p.name}|${p.nick || ""}|${p.joinDate || ""}`);
 
       sortWinnersByDateAsc();
       const winnerLines = state.winners.map(w => `${w.date}:${w.playerId}`);
@@ -561,6 +619,15 @@
       ].join("\n").trim() + "\n";
     }
 
+    function buildWinCountMap(){
+      const winCount = new Map();
+      for (const w of state.winners){
+        winCount.set(w.playerId, (winCount.get(w.playerId) || 0) + 1);
+      }
+      return winCount;
+    }
+
+    // ---- Rendering
     function renderHeader(){
       displayCupTitle();
       renderCupIdPill();
@@ -585,6 +652,22 @@
         frag.appendChild(opt);
       }
       els.playerPick.appendChild(frag);
+    }
+
+    function renderMembersTable(){
+      const winCount = buildWinCountMap();
+
+      els.membersBody.innerHTML = "";
+      const players = state.players.slice().sort((a,b) => a.name.localeCompare(b.name, "de"));
+
+      for (const p of players){
+        const nick = p.nick ? ` (${escapeHtml(p.nick)})` : "";
+        const wins = winCount.get(p.id) || 0;
+        const join = p.joinDate ? escapeHtml(p.joinDate) : "–";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${escapeHtml(p.name)}${nick}</td><td>${wins}</td><td>${join}</td>`;
+        els.membersBody.appendChild(tr);
+      }
     }
 
     function renderLastWinner(){
@@ -624,51 +707,22 @@
       }
     }
 
-    function renderHallOfFame(){
-      const winCount = new Map();
-      for (const w of state.winners){
-        winCount.set(w.playerId, (winCount.get(w.playerId) || 0) + 1);
-      }
-
-      const rows = state.players.map(p => ({
-        id: p.id,
-        name: p.name,
-        nick: p.nick || "",
-        wins: winCount.get(p.id) || 0
-      })).sort((a,b) => {
-        if (b.wins !== a.wins) return b.wins - a.wins;
-        return (a.name || "").localeCompare((b.name || ""), "de");
-      });
-
-      els.hofBody.innerHTML = "";
-      const anyWins = rows.some(r => r.wins > 0);
-      if (!anyWins){
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="2" style="color:var(--muted);">Noch keine Turniersiege vorhanden.</td>`;
-        els.hofBody.appendChild(tr);
-        return;
-      }
-
-      for (const r of rows){
-        if (r.wins === 0) continue;
-        const nick = r.nick ? ` (${escapeHtml(r.nick)})` : "";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${escapeHtml(r.name)}${nick}</td><td><b>${r.wins}</b></td>`;
-        els.hofBody.appendChild(tr);
-      }
+    function renderExport(){
+      els.exportText.value = buildExportText();
     }
 
     function renderAllAfterRead(){
       els.afterRead.classList.remove("hide");
       els.datePick.value = todayISO();
+      els.memJoin.value = todayISO();
 
       renderHeader();
       renderPlayersDropdown();
+      renderMembersTable();
       renderLastWinner();
       renderCounts();
       renderHistoryTable();
-      renderHallOfFame();
-      els.exportText.value = buildExportText();
+      renderExport();
     }
 
     function applyParsed(parsed){
@@ -676,6 +730,63 @@
       state.cupName = parsed.cupName;
       state.players = parsed.players;
       state.winners = parsed.winners;
+    }
+
+    // ---- Actions
+    function addMember(){
+      const name = (els.memName.value || "").trim();
+      const nick = (els.memNick.value || "").trim();
+      const join = (els.memJoin.value || "").trim(); // ISO or empty
+
+      if (!name){
+        setStatus("err", "Bitte einen Namen für das Mitglied eingeben.");
+        return;
+      }
+      if (join && !/^\d{4}-\d{2}-\d{2}$/.test(join)){
+        setStatus("err", "Bitte ein gültiges Beitrittsdatum wählen (oder leer lassen).");
+        return;
+      }
+      if (join && !isISODate(join)){
+        setStatus("err", "Bitte ein gültiges Beitrittsdatum wählen.");
+        return;
+      }
+
+      const id = nextPlayerId();
+      state.players.push({ id, name, nick, joinDate: join });
+
+      renderPlayersDropdown();
+      renderMembersTable();
+      renderCounts();
+      renderExport();
+
+      els.memName.value = "";
+      els.memNick.value = "";
+      els.memJoin.value = todayISO();
+
+      setStatus("ok", `Mitglied hinzugefügt: ${name}`);
+    }
+
+    function addWinner(){
+      const date = (els.datePick.value || "").trim();
+      const playerId = els.playerPick.value;
+
+      if (!isISODate(date)){ setStatus("err", "Bitte ein gültiges Turnierdatum auswählen."); return; }
+      if (!playerId){ setStatus("err", "Bitte einen Gewinner auswählen."); return; }
+
+      const exists = state.winners.some(w => w.date === date && w.playerId === playerId);
+      if (exists){ setStatus("err", "Dieser Gewinner ist für dieses Datum bereits eingetragen."); return; }
+
+      state.winners.push({ date, playerId });
+      sortWinnersByDateAsc();
+
+      renderLastWinner();
+      renderCounts();
+      renderHistoryTable();
+      renderMembersTable(); // Siege aktualisieren
+      renderExport();
+
+      setStatus("ok", "Gewinner hinzugefügt.");
+      els.playerPick.value = "";
     }
 
     function readInputManual(){
@@ -691,29 +802,6 @@
         els.statusManual.classList.add("err");
         els.statusManual.textContent = (err instanceof Error ? err.message : String(err));
       }
-    }
-
-    function addWinner(){
-      const date = els.datePick.value.trim();
-      const playerId = els.playerPick.value;
-
-      if (!isISODate(date)){ setStatus("err", "Bitte ein gültiges Turnierdatum auswählen."); return; }
-      if (!playerId){ setStatus("err", "Bitte einen Gewinner auswählen."); return; }
-
-      const exists = state.winners.some(w => w.date === date && w.playerId === playerId);
-      if (exists){ setStatus("err", "Dieser Gewinner ist für dieses Datum bereits eingetragen."); return; }
-
-      state.winners.push({ date, playerId });
-      sortWinnersByDateAsc();
-
-      renderLastWinner();
-      renderCounts();
-      renderHistoryTable();
-      renderHallOfFame();
-      els.exportText.value = buildExportText();
-
-      setStatus("ok", "Gewinner hinzugefügt.");
-      els.playerPick.value = "";
     }
 
     async function copyExportToClipboard(){
@@ -739,6 +827,7 @@
       }
     }
 
+    // ---- Web NFC
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
     function updateTopPanels(){
@@ -833,11 +922,12 @@
       });
     }
 
-    // Events
+    // ---- Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
 
+    els.btnAddMember.addEventListener("click", addMember);
     els.btnAddWinner.addEventListener("click", addWinner);
 
     els.btnToggleHistory.addEventListener("click", () => {
@@ -846,19 +936,20 @@
       els.btnToggleHistory.textContent = isHidden ? "Historie ausblenden" : "Historie anzeigen";
     });
 
-    els.btnToggleHof.addEventListener("click", () => {
-      const isHidden = els.hofWrap.classList.contains("hide");
-      els.hofWrap.classList.toggle("hide");
-      els.btnToggleHof.textContent = isHidden ? "Hall of Fame ausblenden" : "Hall of Fame anzeigen";
-      if (!els.hofWrap.classList.contains("hide")) renderHallOfFame();
+    els.btnToggleMembers.addEventListener("click", () => {
+      const isHidden = els.membersWrap.classList.contains("hide");
+      els.membersWrap.classList.toggle("hide");
+      els.btnToggleMembers.textContent = isHidden ? "Mitglieder ausblenden" : "Mitglieder anzeigen";
+      if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
     });
 
     els.btnCopy.addEventListener("click", copyExportToClipboard);
 
     (function init(){
       renderHeader();
-      els.datePick.value = todayISO();
       updateTopPanels();
+      els.memJoin.value = todayISO();
+      els.datePick.value = todayISO();
       setStatus(null, "Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.");
     })();
   </script>
