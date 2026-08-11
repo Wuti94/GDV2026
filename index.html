@@ -312,14 +312,13 @@
       <div class="subpanel">
         <div class="grid2">
           <div class="kv">
-            <div>
-              <div style="font-size:12px;color:var(--muted);">Letzter Gewinner</div>
-              <div style="font-size:14px; line-height:1.25;">
-                <!-- Zeile 1: Name + Siege -->
+            <div style="width:100%;">
+              <!-- 1. Zeile: "Letzter Gewinner am (Datum)" -->
+              <div id="lastWinnerHeadline" style="font-size:12px;color:var(--muted);">Letzter Gewinner am –</div>
+              <!-- 2. Zeile: "Name (X Siege)" -->
+              <div style="font-size:14px; margin-top:6px;">
                 <b id="lastWinnerName">–</b>
-                <span id="lastWinnerWins" style="color:var(--muted); margin-left:6px;"></span>
-                <!-- Zeile 2: Datum dd.mm.yyyy -->
-                <div id="lastWinnerDate" style="margin-top:4px;color:var(--muted);font-size:13px;">–</div>
+                <span id="lastWinnerWins" style="color:var(--muted);"></span>
               </div>
             </div>
           </div>
@@ -439,9 +438,9 @@
       status: $("#status"),
 
       afterRead: $("#afterRead"),
+      lastWinnerHeadline: $("#lastWinnerHeadline"),
       lastWinnerName: $("#lastWinnerName"),
       lastWinnerWins: $("#lastWinnerWins"),
-      lastWinnerDate: $("#lastWinnerDate"),
       counts: $("#counts"),
 
       btnToggleHistory: $("#btnToggleHistory"),
@@ -499,8 +498,7 @@
     }
 
     function formatDE(iso){
-      // YYYY-MM-DD -> DD.MM.YYYY
-      if (!isISODate(iso)) return iso || "–";
+      if (!isISODate(iso)) return "–";
       const [y,m,d] = iso.split("-");
       return `${d}.${m}.${y}`;
     }
@@ -689,9 +687,9 @@
     function renderLastWinner(){
       const last = getLastWinner();
       if (!last){
+        els.lastWinnerHeadline.textContent = "Letzter Gewinner am –";
         els.lastWinnerName.textContent = "–";
         els.lastWinnerWins.textContent = "";
-        els.lastWinnerDate.textContent = "–";
         return;
       }
 
@@ -700,12 +698,9 @@
       const displayName = p ? p.name : "Unbekannter Spieler";
       const wins = winCount.get(last.playerId) || 0;
 
-      // Format:
-      // 1. Zeile: Name + "X Siege"
-      // 2. Zeile: Datum als DD.MM.YYYY
+      els.lastWinnerHeadline.textContent = `Letzter Gewinner am ${formatDE(last.date)}`;
       els.lastWinnerName.textContent = displayName;
-      els.lastWinnerWins.textContent = `${wins} Siege`;
-      els.lastWinnerDate.textContent = formatDE(last.date);
+      els.lastWinnerWins.textContent = ` (${wins} Siege)`;
     }
 
     function renderCounts(){
