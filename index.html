@@ -271,6 +271,19 @@
     @media (max-width: 700px){
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
+
+      /* Top buttons full width on mobile */
+      #afterRead .subpanel .btnbar button{
+        width: 100%;
+      }
+
+      /* Bottom buttons: column and full width (NFC schreiben above clipboard) */
+      #exportButtons{
+        flex-direction: column;
+      }
+      #exportButtons button{
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -302,6 +315,7 @@
     </section>
 
     <section id="afterRead" class="panel hide">
+      <!-- Overview -->
       <div class="subpanel">
         <div class="grid2">
           <div class="kv">
@@ -323,13 +337,14 @@
           </div>
         </div>
 
-        <div class="btnbar">
+        <div class="btnbar" id="topActionButtons">
           <button class="primary" id="btnToggleHistory">Historie anzeigen</button>
           <button class="primary" id="btnToggleMembers">Mitglieder anzeigen</button>
           <button class="primary" id="btnToggleTournament">Neues Turnier erfassen</button>
         </div>
       </div>
 
+      <!-- History -->
       <div id="historyWrap" class="hide">
         <table>
           <thead>
@@ -339,6 +354,7 @@
         </table>
       </div>
 
+      <!-- Members -->
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
@@ -375,6 +391,7 @@
         </div>
       </div>
 
+      <!-- Tournament -->
       <div id="tournamentWrap" class="hide">
         <div class="subpanel">
           <div class="row">
@@ -394,15 +411,19 @@
         </div>
       </div>
 
+      <!-- Export -->
       <div class="subpanel">
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
 
-        <div class="btnbar">
-          <button id="btnCopy">In Zwischenablage kopieren</button>
+        <!-- Order: NFC schreiben first, then clipboard -->
+        <div class="btnbar" id="exportButtons">
           <button class="primary" id="btnNfcWrite">NFC schreiben</button>
+          <button id="btnCopy">In Zwischenablage kopieren</button>
         </div>
       </div>
+
+      <div id="statusSpacer" class="status" style="margin-top:12px; display:none;"></div>
     </section>
   </div>
 
@@ -951,7 +972,7 @@
       updateTopPanels();
       els.memJoin.value = todayISO();
       els.datePick.value = todayISO();
-      setStatus(null, "Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.");
+      setStatus(null, "Tippe auf „Pokal auslesen“ und halte den NFC-Tag an dein Gerät.");
     })();
   </script>
 </body>
