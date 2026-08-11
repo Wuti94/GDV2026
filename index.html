@@ -243,7 +243,11 @@
     .row{ display:flex; gap: 10px; flex-wrap: wrap; align-items: end; }
     .row > .col{ flex: 1 1 240px; min-width: 220px; }
     .hide{ display:none !important; }
+
+    /* Handy: "Web NFC" ausblenden */
     @media (max-width: 700px){
+      #webNfcLabel{ display:none !important; }
+
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
       #afterRead .subpanel .btnbar button{ width: 100%; }
@@ -263,8 +267,8 @@
     </header>
 
     <section id="topNfcPanel" class="panel hide">
-      <div style="color:var(--muted);font-size:12px;">Web NFC</div>
-      <div class="nfcActions">
+      <div id="webNfcLabel" style="color:var(--muted);font-size:12px;">Web NFC</div>
+      <div class="nfcActions" id="nfcActions">
         <button id="btnNfcRead" class="primary btnBig">Pokal auslesen</button>
       </div>
     </section>
@@ -371,7 +375,7 @@
       </div>
     </section>
 
-    <!-- Status/Info IMMER am unteren Ende der Seite -->
+    <!-- Status/Info IMMER unten -->
     <div id="status" class="status" style="margin-top:12px;">
       Tippe auf „Pokal auslesen“ und halte den NFC-Tag an dein Gerät.
     </div>
@@ -395,6 +399,7 @@
       statusManual: $("#statusManual"),
       btnNfcRead: $("#btnNfcRead"),
       btnNfcWrite: $("#btnNfcWrite"),
+      nfcActions: $("#nfcActions"),
       status: $("#status"),
       afterRead: $("#afterRead"),
 
@@ -703,6 +708,13 @@
       els.exportText.value = buildExportText();
     }
 
+    function hideReadButtonOnMobileAfterSuccess(){
+      // Nur am Handy ausblenden
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        if (els.nfcActions) els.nfcActions.classList.add("hide");
+      }
+    }
+
     function renderAllAfterRead(){
       els.afterRead.classList.remove("hide");
       els.datePick.value = todayISO();
@@ -782,6 +794,8 @@
         applyParsed(parsed);
         clearManualErrorUI();
         renderAllAfterRead();
+        setStatus("ok", "Pokal erfolgreich ausgelesen.");
+        hideReadButtonOnMobileAfterSuccess();
       }catch(err){
         els.afterRead.classList.add("hide");
         state.cupId = null; state.cupName = null;
@@ -866,6 +880,7 @@
 
             setStatus("ok", "Pokal erfolgreich ausgelesen.");
             renderAllAfterRead();
+            hideReadButtonOnMobileAfterSuccess();
           }catch(e){
             setStatus("err", e instanceof Error ? e.message : String(e));
           }finally{
