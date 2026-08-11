@@ -130,12 +130,14 @@
       gap: 10px;
       margin-top: 10px;
     }
+    /* Button "Pokal auslesen" an andere Buttons anpassen */
     .btnBig{
-      width: min(720px, 100%);
-      padding: 18px 16px;
-      font-size: 18px;
-      border-radius: 16px;
+      width: 100%;
+      padding: 14px 14px;
+      font-size: 16px;
+      border-radius: 14px;
     }
+
     .btnFull{
       width: 100%;
       padding: 14px 14px;
@@ -265,7 +267,6 @@
       <div class="nfcActions">
         <button id="btnNfcRead" class="primary btnBig">Pokal auslesen</button>
       </div>
-      <div id="status" class="status">Tippe auf „Pokal auslesen“ und halte den Tag an dein Gerät.</div>
     </section>
 
     <section id="topManualPanel" class="panel hide">
@@ -364,11 +365,16 @@
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
         <div class="btnbar" id="exportButtons">
-          <button class="primary" id="btnNfcWrite">NFC schreiben</button>
+          <button class="primary" id="btnNfcWrite">Pokal aktualisieren</button>
           <button id="btnCopy">In Zwischenablage kopieren</button>
         </div>
       </div>
     </section>
+
+    <!-- Status/Info IMMER am unteren Ende der Seite -->
+    <div id="status" class="status" style="margin-top:12px;">
+      Tippe auf „Pokal auslesen“ und halte den NFC-Tag an dein Gerät.
+    </div>
   </div>
 
   <script>
@@ -450,7 +456,6 @@
       return dt.getUTCFullYear() === y && (dt.getUTCMonth()+1) === m && dt.getUTCDate() === d;
     }
 
-    // Anzeigeformat: TT.MM.JJJJ
     function formatDE(iso){
       if (!isISODate(iso)) return "–";
       const [y,m,d] = iso.split("-");
@@ -600,7 +605,6 @@
     }
 
     function updateMenuButtonLabels(){
-      // Basis-Text je nach Zustand (offen/geschlossen)
       const histOpen = !els.historyWrap.classList.contains("hide");
       const memOpen  = !els.membersWrap.classList.contains("hide");
 
@@ -641,8 +645,6 @@
       for (const p of players){
         const nick = p.nick ? `(${escapeHtml(p.nick)})` : "";
         const wins = winCount.get(p.id) || 0;
-
-        // UI: Beitritt im Format TT.MM.JJJJ
         const join = p.joinDate ? escapeHtml(formatDE(p.joinDate)) : "–";
 
         const tr = document.createElement("tr");
@@ -689,7 +691,6 @@
           ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}`
           : "Unbekannter Spieler";
 
-        // UI: Datum im Format TT.MM.JJJJ
         const dateDE = escapeHtml(formatDE(w.date));
 
         const tr = document.createElement("tr");
@@ -897,20 +898,18 @@
         const writer = new NDEFReader();
         setStatus("warn", "Bereit zum Schreiben… halte den NFC-Tag an dein Gerät.");
         await writer.write({ records: [{ recordType: "text", data: payload, lang: "de" }] });
-        setStatus("ok", "NFC erfolgreich beschrieben.");
+        setStatus("ok", "Pokal erfolgreich aktualisiert.");
       }catch(err){
         setStatus("err", `NFC Schreiben fehlgeschlagen: ${err && err.message ? err.message : String(err)}`);
       }
     }
 
-    // Service Worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 
-    // Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
