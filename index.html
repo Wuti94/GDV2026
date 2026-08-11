@@ -266,6 +266,12 @@
     .row > .col{ flex: 1 1 240px; min-width: 220px; }
 
     .hide{ display:none !important; }
+
+    /* Handy: NFC-Export-Textfeld ausblenden, aber "In Zwischenablage" behalten */
+    @media (max-width: 700px){
+      #exportText{ display:none !important; }
+      label[for="exportText"]{ display:none !important; }
+    }
   </style>
 </head>
 
@@ -296,7 +302,6 @@
     </section>
 
     <section id="afterRead" class="panel hide">
-      <!-- Übersicht -->
       <div class="subpanel">
         <div class="grid2">
           <div class="kv">
@@ -325,7 +330,6 @@
         </div>
       </div>
 
-      <!-- Historie -->
       <div id="historyWrap" class="hide">
         <table>
           <thead>
@@ -335,7 +339,6 @@
         </table>
       </div>
 
-      <!-- Mitglieder + Siege -->
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
@@ -372,7 +375,6 @@
         </div>
       </div>
 
-      <!-- Turnier erfassen (neu: einklappbar) -->
       <div id="tournamentWrap" class="hide">
         <div class="subpanel">
           <div class="row">
@@ -392,7 +394,6 @@
         </div>
       </div>
 
-      <!-- Export -->
       <div class="subpanel">
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
