@@ -272,10 +272,8 @@
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
 
-      /* Top buttons full width on mobile */
       #afterRead .subpanel .btnbar button{ width: 100%; }
 
-      /* Bottom buttons: column and full width (NFC schreiben above clipboard) */
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
     }
@@ -313,9 +311,7 @@
         <div class="grid2">
           <div class="kv">
             <div style="width:100%;">
-              <!-- 1. Zeile: "Letzter Gewinner am (Datum)" -->
               <div id="lastWinnerHeadline" style="font-size:12px;color:var(--muted);">Letzter Gewinner am –</div>
-              <!-- 2. Zeile: "Name (X Siege)" -->
               <div style="font-size:14px; margin-top:6px;">
                 <b id="lastWinnerName">–</b>
                 <span id="lastWinnerWins" style="color:var(--muted);"></span>
@@ -696,10 +692,12 @@
       const winCount = buildWinCountMap();
       const p = playerById(last.playerId);
       const displayName = p ? p.name : "Unbekannter Spieler";
+      const nick = (p && p.nick) ? ` - ${p.nick}` : "";
       const wins = winCount.get(last.playerId) || 0;
 
       els.lastWinnerHeadline.textContent = `Letzter Gewinner am ${formatDE(last.date)}`;
-      els.lastWinnerName.textContent = displayName;
+      // gewünschtes Format: Name - Spitzname (Anzahl Siege)
+      els.lastWinnerName.textContent = `${displayName}${nick}`;
       els.lastWinnerWins.textContent = ` (${wins} Siege)`;
     }
 
@@ -841,7 +839,6 @@
       }
     }
 
-    // Web NFC
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
     function updateTopPanels(){
@@ -929,14 +926,12 @@
       }
     }
 
-    // PWA: Service Worker registrieren
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 
-    // Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
