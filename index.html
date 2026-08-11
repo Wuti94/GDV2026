@@ -273,17 +273,11 @@
       label[for="exportText"]{ display:none !important; }
 
       /* Top buttons full width on mobile */
-      #afterRead .subpanel .btnbar button{
-        width: 100%;
-      }
+      #afterRead .subpanel .btnbar button{ width: 100%; }
 
       /* Bottom buttons: column and full width (NFC schreiben above clipboard) */
-      #exportButtons{
-        flex-direction: column;
-      }
-      #exportButtons button{
-        width: 100%;
-      }
+      #exportButtons{ flex-direction: column; }
+      #exportButtons button{ width: 100%; }
     }
   </style>
 </head>
@@ -315,18 +309,19 @@
     </section>
 
     <section id="afterRead" class="panel hide">
-      <!-- Overview -->
       <div class="subpanel">
         <div class="grid2">
           <div class="kv">
             <div>
               <div style="font-size:12px;color:var(--muted);">Letzter Gewinner</div>
-              <div style="font-size:14px;">
+              <div style="font-size:14px; line-height:1.25;">
+                <!-- Zeile 1: Name + Siege -->
                 <b id="lastWinnerName">–</b>
-                <span id="lastWinnerMeta"></span>
+                <span id="lastWinnerWins" style="color:var(--muted); margin-left:6px;"></span>
+                <!-- Zeile 2: Datum dd.mm.yyyy -->
+                <div id="lastWinnerDate" style="margin-top:4px;color:var(--muted);font-size:13px;">–</div>
               </div>
             </div>
-            <div id="lastWinnerDate">–</div>
           </div>
 
           <div class="kv">
@@ -344,7 +339,6 @@
         </div>
       </div>
 
-      <!-- History -->
       <div id="historyWrap" class="hide">
         <table>
           <thead>
@@ -354,7 +348,6 @@
         </table>
       </div>
 
-      <!-- Members -->
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
@@ -391,7 +384,6 @@
         </div>
       </div>
 
-      <!-- Tournament -->
       <div id="tournamentWrap" class="hide">
         <div class="subpanel">
           <div class="row">
@@ -411,19 +403,15 @@
         </div>
       </div>
 
-      <!-- Export -->
       <div class="subpanel">
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
 
-        <!-- Order: NFC schreiben first, then clipboard -->
         <div class="btnbar" id="exportButtons">
           <button class="primary" id="btnNfcWrite">NFC schreiben</button>
           <button id="btnCopy">In Zwischenablage kopieren</button>
         </div>
       </div>
-
-      <div id="statusSpacer" class="status" style="margin-top:12px; display:none;"></div>
     </section>
   </div>
 
@@ -452,7 +440,7 @@
 
       afterRead: $("#afterRead"),
       lastWinnerName: $("#lastWinnerName"),
-      lastWinnerMeta: $("#lastWinnerMeta"),
+      lastWinnerWins: $("#lastWinnerWins"),
       lastWinnerDate: $("#lastWinnerDate"),
       counts: $("#counts"),
 
@@ -508,6 +496,13 @@
       const [y,m,d] = s.split("-").map(Number);
       const dt = new Date(Date.UTC(y, m-1, d));
       return dt.getUTCFullYear() === y && (dt.getUTCMonth()+1) === m && dt.getUTCDate() === d;
+    }
+
+    function formatDE(iso){
+      // YYYY-MM-DD -> DD.MM.YYYY
+      if (!isISODate(iso)) return iso || "–";
+      const [y,m,d] = iso.split("-");
+      return `${d}.${m}.${y}`;
     }
 
     function normNewlines(text){
@@ -695,15 +690,22 @@
       const last = getLastWinner();
       if (!last){
         els.lastWinnerName.textContent = "–";
-        els.lastWinnerMeta.textContent = " (noch kein Eintrag)";
+        els.lastWinnerWins.textContent = "";
         els.lastWinnerDate.textContent = "–";
         return;
       }
+
+      const winCount = buildWinCountMap();
       const p = playerById(last.playerId);
-      const nick = p?.nick ? ` (${p.nick})` : "";
-      els.lastWinnerName.textContent = p ? `${p.name}${nick}` : "Unbekannter Spieler";
-      els.lastWinnerMeta.textContent = "";
-      els.lastWinnerDate.textContent = last.date;
+      const displayName = p ? p.name : "Unbekannter Spieler";
+      const wins = winCount.get(last.playerId) || 0;
+
+      // Format:
+      // 1. Zeile: Name + "X Siege"
+      // 2. Zeile: Datum als DD.MM.YYYY
+      els.lastWinnerName.textContent = displayName;
+      els.lastWinnerWins.textContent = `${wins} Siege`;
+      els.lastWinnerDate.textContent = formatDE(last.date);
     }
 
     function renderCounts(){
@@ -773,6 +775,7 @@
       renderPlayersDropdown();
       renderMembersTable();
       renderCounts();
+      renderLastWinner();
       renderExport();
 
       els.memName.value = "";
