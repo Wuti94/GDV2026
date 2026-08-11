@@ -15,17 +15,13 @@
     :root{
       --bg0:#07060a;
       --bg1:#0b0a10;
-
       --text:#f4f0e6;
       --muted:#c8c1b2;
-
       --line: rgba(227, 195, 120, 0.25);
       --line2: rgba(227, 195, 120, 0.16);
-
       --shadow: 0 10px 30px rgba(0,0,0,0.55);
       --glow: 0 0 0 2px rgba(232,197,110,0.10), 0 0 20px rgba(232,197,110,0.08);
     }
-
     *{ box-sizing:border-box; }
     html, body{ height:100%; }
     body{
@@ -38,9 +34,7 @@
         radial-gradient(900px 600px at 50% 110%, rgba(166,124,42,0.08), transparent 55%),
         linear-gradient(180deg, var(--bg0), var(--bg1));
     }
-
     .wrap{ max-width: 980px; margin: 0 auto; padding: 18px 14px 28px; }
-
     header{
       position: relative;
       padding: 16px 14px 18px;
@@ -63,9 +57,7 @@
       background: linear-gradient(90deg, transparent, rgba(246,227,161,0.6), rgba(214,177,92,0.35), transparent);
       opacity: 0.8;
     }
-
     .headrow{ display:flex; align-items:baseline; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
-
     h1{
       margin:0;
       font-weight: 820;
@@ -78,7 +70,6 @@
       color: transparent;
       text-shadow: 0 1px 0 rgba(0,0,0,0.35);
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -91,7 +82,6 @@
       font-size: 12px;
       white-space: nowrap;
     }
-
     .panel{
       background:
         radial-gradient(900px 260px at 15% 0%, rgba(246,227,161,0.06), transparent 60%),
@@ -104,7 +94,6 @@
       margin: 12px 0;
       box-shadow: 0 10px 28px rgba(0,0,0,0.35);
     }
-
     .subpanel{
       margin-top: 12px;
       border-radius: 14px;
@@ -112,9 +101,7 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(0,0,0,0.18));
       padding: 12px;
     }
-
     .btnbar{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-
     button{
       border: 1px solid var(--line);
       background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.16));
@@ -129,7 +116,6 @@
     }
     button:hover{ border-color: rgba(232,197,110,0.65); filter: brightness(1.05); }
     button:active{ transform: translateY(1px); }
-
     button.primary{
       border-color: rgba(232,197,110,0.72);
       background:
@@ -137,7 +123,6 @@
         linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.20));
       box-shadow: 0 12px 22px rgba(0,0,0,0.30), 0 0 0 1px rgba(232,197,110,0.12);
     }
-
     .nfcActions{
       display:flex;
       flex-direction: column;
@@ -151,7 +136,6 @@
       font-size: 18px;
       border-radius: 16px;
     }
-
     .btnFull{
       width: 100%;
       padding: 14px 14px;
@@ -164,7 +148,6 @@
       font-size: 16px;
       border-radius: 14px;
     }
-
     label{
       display:block;
       font-size: 12px;
@@ -172,7 +155,6 @@
       color: var(--muted);
       margin: 0 0 6px;
     }
-
     textarea, input[type="date"], select, input[type="text"]{
       width: 100%;
       border: 1px solid var(--line);
@@ -183,7 +165,6 @@
       outline: none;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
     }
-
     textarea{
       min-height: 180px;
       resize: vertical;
@@ -197,7 +178,6 @@
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), var(--glow);
     }
     textarea[readonly]{ opacity: 0.92; }
-
     .status{
       margin-top: 10px;
       padding: 10px 12px;
@@ -222,10 +202,8 @@
       color: rgba(246,227,161,0.95);
       background: rgba(232,197,110,0.06);
     }
-
     .grid2{ display:grid; grid-template-columns: 1fr; gap: 12px; }
     @media (min-width: 860px){ .grid2{ grid-template-columns: 1fr 1fr; } }
-
     .kv{
       display:flex;
       gap: 10px;
@@ -238,7 +216,6 @@
         radial-gradient(700px 140px at 20% 0%, rgba(246,227,161,0.06), transparent 60%),
         linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.18));
     }
-
     table{
       width: 100%;
       border-collapse: collapse;
@@ -261,19 +238,13 @@
       letter-spacing: 0.25px;
     }
     tr:last-child td{ border-bottom: none; }
-
     .row{ display:flex; gap: 10px; flex-wrap: wrap; align-items: end; }
     .row > .col{ flex: 1 1 240px; min-width: 220px; }
-
     .hide{ display:none !important; }
-
-    /* Handy: NFC-Export-Textfeld ausblenden, aber "In Zwischenablage" behalten */
     @media (max-width: 700px){
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
-
       #afterRead .subpanel .btnbar button{ width: 100%; }
-
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
     }
@@ -318,13 +289,6 @@
               </div>
             </div>
           </div>
-
-          <div class="kv">
-            <div>
-              <div style="font-size:12px;color:var(--muted);">Anzahl Spieler / Turniere</div>
-              <div style="font-size:14px;"><b id="counts">–</b></div>
-            </div>
-          </div>
         </div>
 
         <div class="btnbar" id="topActionButtons">
@@ -346,7 +310,6 @@
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
-
           <table>
             <thead>
               <tr>
@@ -391,7 +354,6 @@
               <select id="playerPick"></select>
             </div>
           </div>
-
           <div class="btnbar">
             <button class="primary btnWide" id="btnAddWinner">Gewinner hinzufügen</button>
           </div>
@@ -401,7 +363,6 @@
       <div class="subpanel">
         <label for="exportText">NFC Daten (zum Schreiben)</label>
         <textarea id="exportText" spellcheck="false" readonly></textarea>
-
         <div class="btnbar" id="exportButtons">
           <button class="primary" id="btnNfcWrite">NFC schreiben</button>
           <button id="btnCopy">In Zwischenablage kopieren</button>
@@ -421,23 +382,19 @@
     const els = {
       cupName: $("#cupName"),
       cupIdPill: $("#cupIdPill"),
-
       topNfcPanel: $("#topNfcPanel"),
       topManualPanel: $("#topManualPanel"),
-
       inputText: $("#inputText"),
       btnRead: $("#btnRead"),
       statusManual: $("#statusManual"),
-
       btnNfcRead: $("#btnNfcRead"),
       btnNfcWrite: $("#btnNfcWrite"),
       status: $("#status"),
-
       afterRead: $("#afterRead"),
+
       lastWinnerHeadline: $("#lastWinnerHeadline"),
       lastWinnerName: $("#lastWinnerName"),
       lastWinnerWins: $("#lastWinnerWins"),
-      counts: $("#counts"),
 
       btnToggleHistory: $("#btnToggleHistory"),
       historyWrap: $("#historyWrap"),
@@ -493,6 +450,7 @@
       return dt.getUTCFullYear() === y && (dt.getUTCMonth()+1) === m && dt.getUTCDate() === d;
     }
 
+    // Anzeigeformat: TT.MM.JJJJ
     function formatDE(iso){
       if (!isISODate(iso)) return "–";
       const [y,m,d] = iso.split("-");
@@ -543,13 +501,11 @@
     function parseNfcText(text){
       const src = normNewlines(text).trim();
       if (!src) throw new Error("Eingabe ist leer.");
-
       const lines = src.split("\n").map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length < 3) throw new Error("Zu wenige Zeilen. Erwartet Kopfzeile + Sektionen.");
 
       const header = lines[0].split("|");
       if (header.length < 2) throw new Error("Ungültige Kopfzeile. Erwartet: Pokal-ID|Pokalname");
-
       const cupId = header[0].trim();
       const cupName = header.slice(1).join("|").trim();
       if (!cupId) throw new Error("Pokal-ID fehlt in Kopfzeile.");
@@ -643,6 +599,18 @@
       renderCupIdPill();
     }
 
+    function updateMenuButtonLabels(){
+      // Basis-Text je nach Zustand (offen/geschlossen)
+      const histOpen = !els.historyWrap.classList.contains("hide");
+      const memOpen  = !els.membersWrap.classList.contains("hide");
+
+      const tCount = state.winners.length;
+      const pCount = state.players.length;
+
+      els.btnToggleHistory.textContent = (histOpen ? "Historie ausblenden" : "Historie anzeigen") + ` (${tCount})`;
+      els.btnToggleMembers.textContent = (memOpen ? "Mitglieder ausblenden" : "Mitglieder anzeigen") + ` (${pCount})`;
+    }
+
     function renderPlayersDropdown(){
       els.playerPick.innerHTML = "";
       const frag = document.createDocumentFragment();
@@ -657,23 +625,26 @@
       for (const p of state.players){
         const opt = document.createElement("option");
         opt.value = p.id;
-        const nick = p.nick ? ` (${p.nick})` : "";
+        const nick = p.nick ? `(${p.nick})` : "";
         opt.textContent = `${p.name}${nick}`;
         frag.appendChild(opt);
       }
+
       els.playerPick.appendChild(frag);
     }
 
     function renderMembersTable(){
       const winCount = buildWinCountMap();
-
       els.membersBody.innerHTML = "";
-      const players = state.players.slice().sort((a,b) => a.name.localeCompare(b.name, "de"));
 
+      const players = state.players.slice().sort((a,b) => a.name.localeCompare(b.name, "de"));
       for (const p of players){
-        const nick = p.nick ? ` (${escapeHtml(p.nick)})` : "";
+        const nick = p.nick ? `(${escapeHtml(p.nick)})` : "";
         const wins = winCount.get(p.id) || 0;
-        const join = p.joinDate ? escapeHtml(p.joinDate) : "–";
+
+        // UI: Beitritt im Format TT.MM.JJJJ
+        const join = p.joinDate ? escapeHtml(formatDE(p.joinDate)) : "–";
+
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${escapeHtml(p.name)}${nick}</td><td>${wins}</td><td>${join}</td>`;
         els.membersBody.appendChild(tr);
@@ -691,34 +662,38 @@
 
       const winCount = buildWinCountMap();
       const p = playerById(last.playerId);
+
       const displayName = p ? p.name : "Unbekannter Spieler";
-      const nick = (p && p.nick) ? ` - ${p.nick}` : "";
+      const nick = (p && p.nick) ? `- ${p.nick}` : "";
       const wins = winCount.get(last.playerId) || 0;
 
       els.lastWinnerHeadline.textContent = `Letzter Gewinner am ${formatDE(last.date)}`;
-      // gewünschtes Format: Name - Spitzname (Anzahl Siege)
       els.lastWinnerName.textContent = `${displayName}${nick}`;
-      els.lastWinnerWins.textContent = ` (${wins} Siege)`;
-    }
-
-    function renderCounts(){
-      els.counts.textContent = `${state.players.length} Spieler / ${state.winners.length} Turniere`;
+      els.lastWinnerWins.textContent = `(${wins} Siege)`;
     }
 
     function renderHistoryTable(){
       sortWinnersByDateAsc();
       els.historyBody.innerHTML = "";
+
       if (state.winners.length === 0){
         const tr = document.createElement("tr");
         tr.innerHTML = `<td colspan="2" style="color:var(--muted);">Keine Historie vorhanden.</td>`;
         els.historyBody.appendChild(tr);
         return;
       }
+
       for (const w of state.winners){
         const p = playerById(w.playerId);
-        const name = p ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}` : "Unbekannter Spieler";
+        const name = p
+          ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}`
+          : "Unbekannter Spieler";
+
+        // UI: Datum im Format TT.MM.JJJJ
+        const dateDE = escapeHtml(formatDE(w.date));
+
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${escapeHtml(w.date)}</td><td>${name}</td>`;
+        tr.innerHTML = `<td>${dateDE}</td><td>${name}</td>`;
         els.historyBody.appendChild(tr);
       }
     }
@@ -736,9 +711,9 @@
       renderPlayersDropdown();
       renderMembersTable();
       renderLastWinner();
-      renderCounts();
       renderHistoryTable();
       renderExport();
+      updateMenuButtonLabels();
     }
 
     function applyParsed(parsed){
@@ -767,14 +742,13 @@
 
       renderPlayersDropdown();
       renderMembersTable();
-      renderCounts();
       renderLastWinner();
       renderExport();
+      updateMenuButtonLabels();
 
       els.memName.value = "";
       els.memNick.value = "";
       els.memJoin.value = todayISO();
-
       setStatus("ok", `Mitglied hinzugefügt: ${name}`);
     }
 
@@ -792,10 +766,10 @@
       sortWinnersByDateAsc();
 
       renderLastWinner();
-      renderCounts();
       renderHistoryTable();
       renderMembersTable();
       renderExport();
+      updateMenuButtonLabels();
 
       setStatus("ok", "Gewinner hinzugefügt.");
       els.playerPick.value = "";
@@ -813,6 +787,7 @@
         renderHeader();
         els.statusManual.classList.add("err");
         els.statusManual.textContent = (err instanceof Error ? err.message : String(err));
+        updateMenuButtonLabels();
       }
     }
 
@@ -841,6 +816,7 @@
 
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
+
     function updateTopPanels(){
       const nfcOk = hasWebNfc() && isSecureContextOk();
       els.topNfcPanel.classList.toggle("hide", !nfcOk);
@@ -857,6 +833,7 @@
       }
       return "";
     }
+
     function tryDecodeRecordData(rec){
       try{
         if (!rec || !rec.data) return "";
@@ -926,29 +903,28 @@
       }
     }
 
+    // Service Worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 
+    // Events
     if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
-
     els.btnAddMember.addEventListener("click", addMember);
     els.btnAddWinner.addEventListener("click", addWinner);
 
     els.btnToggleHistory.addEventListener("click", () => {
-      const isHidden = els.historyWrap.classList.contains("hide");
       els.historyWrap.classList.toggle("hide");
-      els.btnToggleHistory.textContent = isHidden ? "Historie ausblenden" : "Historie anzeigen";
+      updateMenuButtonLabels();
     });
 
     els.btnToggleMembers.addEventListener("click", () => {
-      const isHidden = els.membersWrap.classList.contains("hide");
       els.membersWrap.classList.toggle("hide");
-      els.btnToggleMembers.textContent = isHidden ? "Mitglieder ausblenden" : "Mitglieder anzeigen";
+      updateMenuButtonLabels();
       if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
     });
 
@@ -966,6 +942,7 @@
       els.memJoin.value = todayISO();
       els.datePick.value = todayISO();
       setStatus(null, "Tippe auf „Pokal auslesen“ und halte den NFC-Tag an dein Gerät.");
+      updateMenuButtonLabels();
     })();
   </script>
 </body>
