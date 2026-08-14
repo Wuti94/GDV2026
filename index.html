@@ -34,6 +34,7 @@
         linear-gradient(180deg, var(--bg0), var(--bg1));
     }
     .wrap{ max-width: 980px; margin: 0 auto; padding: 18px 14px 28px; }
+
     header{
       position: relative;
       padding: 16px 14px 18px;
@@ -81,6 +82,7 @@
       font-size: 12px;
       white-space: nowrap;
     }
+
     .panel{
       background:
         radial-gradient(900px 260px at 15% 0%, rgba(246,227,161,0.06), transparent 60%),
@@ -100,6 +102,7 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(0,0,0,0.18));
       padding: 12px;
     }
+
     .btnbar{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
     button{
       border: 1px solid var(--line);
@@ -122,6 +125,7 @@
         linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.20));
       box-shadow: 0 12px 22px rgba(0,0,0,0.30), 0 0 0 1px rgba(232,197,110,0.12);
     }
+
     .nfcActions{
       display:flex;
       flex-direction: column;
@@ -204,7 +208,7 @@
       font-size: 13px;
       vertical-align: top;
 
-      /* wichtig: nicht Buchstabe für Buchstabe umbrechen */
+      /* nicht buchstabenweise umbrechen */
       word-break: normal;
       overflow-wrap: anywhere;
     }
@@ -218,7 +222,6 @@
 
     .hide{ display:none !important; }
 
-    /* Name/Nick als feste 2 Zeilen */
     .who{ display:block; line-height: 1.2; }
     .who .name{ display:block; font-weight: 850; }
     .who .nick{
@@ -228,6 +231,7 @@
       font-weight: 650;
     }
 
+    /* Handy-Optimierung: Mitglieder-Tabelle als "Karten"-Liste */
     @media (max-width: 700px){
       #webNfcLabel{ display:none !important; }
 
@@ -235,6 +239,32 @@
       label[for="exportText"]{ display:none !important; }
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
+
+      /* Mitglieder-Tabelle: nur Name + darunter kleine Meta (Siege/Beitritt) */
+      table.members thead{ display:none; }
+      table.members, table.members tbody, table.members tr, table.members td{
+        display:block;
+        width: 100%;
+      }
+      table.members tr{
+        border-bottom: 1px solid rgba(227,195,120,0.14);
+      }
+      table.members td{
+        border-bottom: none;
+        padding: 10px 12px;
+      }
+      table.members td.meta{
+        padding-top: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      table.members td.meta span{
+        display:inline-block;
+        margin-right: 10px;
+      }
+
+      /* Historie: Datum schmal halten */
+      table.history th:first-child{ width: 110px !important; }
     }
   </style>
 </head>
@@ -286,7 +316,7 @@
       </div>
 
       <div id="historyWrap" class="hide">
-        <table>
+        <table class="history">
           <thead>
             <tr><th style="width: 140px;">Datum</th><th>Gewinner</th></tr>
           </thead>
@@ -297,7 +327,7 @@
       <div id="membersWrap" class="hide">
         <div class="subpanel">
           <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
-          <table>
+          <table class="members">
             <thead>
               <tr>
                 <th>Name</th>
@@ -537,12 +567,11 @@
       const players = state.players.slice().sort((a,b) => {
         const ma = String(a.id).match(/^P(\d+)$/i);
         const mb = String(b.id).match(/^P(\d+)$/i);
-        if (ma && mb) return Number(ma[1]) - Number(mb[1]);   // FIX: mb statt m
+        if (ma && mb) return Number(ma[1]) - Number(mb[1]); // FIX
         return String(a.id).localeCompare(String(b.id));
       });
 
       const playerLines = players.map(p => `${p.id}|${p.name}|${p.nick || ""}|${p.joinDate || ""}`);
-
       sortWinnersByDateAsc();
       const winnerLines = state.winners.map(w => `${w.date}:${w.playerId}`);
 
@@ -586,16 +615,35 @@
         const join = p.joinDate ? escapeHtml(formatDE(p.joinDate)) : "–";
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>
-            <span class="who">
-              <span class="name">${escapeHtml(p.name)}</span>
-              ${p.nick ? `<span class="nick">${escapeHtml(p.nick)}</span>` : ``}
-            </span>
-          </td>
-          <td>${wins}</td>
-          <td>${join}</td>
-        `;
+
+        // Handy: "Karten"-Layout (2 Zeilen)
+        if (window.matchMedia("(max-width: 700px)").matches) {
+          tr.innerHTML = `
+            <td>
+              <span class="who">
+                <span class="name">${escapeHtml(p.name)}</span>
+                ${p.nick ? `<span class="nick">${escapeHtml(p.nick)}</span>` : ``}
+              </span>
+            </td>
+            <td class="meta">
+              <span><b>${wins}</b> Siege</span>
+              <span>Beitritt: <b>${join}</b></span>
+            </td>
+          `;
+        } else {
+          // Desktop: normale Tabelle mit 3 Spalten
+          tr.innerHTML = `
+            <td>
+              <span class="who">
+                <span class="name">${escapeHtml(p.name)}</span>
+                ${p.nick ? `<span class="nick">${escapeHtml(p.nick)}</span>` : ``}
+              </span>
+            </td>
+            <td>${wins}</td>
+            <td>${join}</td>
+          `;
+        }
+
         els.membersBody.appendChild(tr);
       }
     }
@@ -678,24 +726,6 @@
     function hideNfcReadPanelOnMobileAfterSuccess(){
       if (window.matchMedia("(max-width: 700px)").matches) {
         if (els.topNfcPanel) els.topNfcPanel.classList.add("hide");
-      }
-    }
-
-    function readInputManual(){
-      try{
-        const parsed = parseNfcText(els.inputText.value);
-        applyParsed(parsed);
-        clearManualErrorUI();
-        renderAllAfterRead();
-        setStatus("ok", "Pokal erfolgreich ausgelesen.");
-        hideNfcReadPanelOnMobileAfterSuccess();
-      }catch(err){
-        els.afterRead.classList.add("hide");
-        state.cupId = null; state.cupName = null;
-        renderHeader();
-        els.statusManual.classList.add("err");
-        els.statusManual.textContent = (err instanceof Error ? err.message : String(err));
-        updateMenuButtonLabels();
       }
     }
 
@@ -815,9 +845,27 @@
       });
     }
 
-    if (els.btnRead) els.btnRead.addEventListener("click", readInputManual);
+    if (els.btnRead) els.btnRead.addEventListener("click", () => {
+      try{
+        const parsed = parseNfcText(els.inputText.value);
+        applyParsed(parsed);
+        clearManualErrorUI();
+        renderAllAfterRead();
+        setStatus("ok", "Pokal erfolgreich ausgelesen.");
+        hideNfcReadPanelOnMobileAfterSuccess();
+      }catch(err){
+        els.afterRead.classList.add("hide");
+        state.cupId = null; state.cupName = null;
+        renderHeader();
+        els.statusManual.classList.add("err");
+        els.statusManual.textContent = (err instanceof Error ? err.message : String(err));
+        updateMenuButtonLabels();
+      }
+    });
+
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
+
     els.btnAddMember.addEventListener("click", () => {
       const name = (els.memName.value || "").trim();
       const nick = (els.memNick.value || "").trim();
@@ -882,6 +930,11 @@
     });
 
     els.btnCopy.addEventListener("click", copyExportToClipboard);
+
+    // Re-render Members-Table on resize (für Handy<->Desktop Layout Wechsel)
+    window.addEventListener("resize", () => {
+      if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
+    });
 
     (function init(){
       renderHeader();
