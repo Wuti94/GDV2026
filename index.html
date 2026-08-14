@@ -115,6 +115,7 @@
       letter-spacing: 0.25px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.25);
       transition: transform 0.05s ease, border-color 0.15s ease, filter 0.15s ease;
+      width: auto;
     }
     button:hover{ border-color: rgba(232,197,110,0.65); filter: brightness(1.05); }
     button:active{ transform: translateY(1px); }
@@ -207,8 +208,6 @@
       border-bottom: 1px solid rgba(227,195,120,0.14);
       font-size: 13px;
       vertical-align: top;
-
-      /* nicht buchstabenweise umbrechen */
       word-break: normal;
       overflow-wrap: anywhere;
     }
@@ -231,28 +230,27 @@
       font-weight: 650;
     }
 
-    /* Handy-Optimierung: Mitglieder-Tabelle als "Karten"-Liste */
+    /* --- Handy-Layout Regeln --- */
     @media (max-width: 700px){
       #webNfcLabel{ display:none !important; }
+
+      /* Buttons im Menü alle gleich breit (100%) */
+      #topActionButtons{ flex-direction: column; }
+      #topActionButtons button{ width: 100%; }
 
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
 
-      /* Mitglieder-Tabelle: nur Name + darunter kleine Meta (Siege/Beitritt) */
+      /* Mitglieder: Karten-Liste */
       table.members thead{ display:none; }
       table.members, table.members tbody, table.members tr, table.members td{
         display:block;
         width: 100%;
       }
-      table.members tr{
-        border-bottom: 1px solid rgba(227,195,120,0.14);
-      }
-      table.members td{
-        border-bottom: none;
-        padding: 10px 12px;
-      }
+      table.members tr{ border-bottom: 1px solid rgba(227,195,120,0.14); }
+      table.members td{ border-bottom: none; padding: 10px 12px; }
       table.members td.meta{
         padding-top: 0;
         color: var(--muted);
@@ -308,71 +306,77 @@
           </div>
         </div>
 
+        <!-- Buttons + Panels direkt darunter (je Button) -->
         <div class="btnbar" id="topActionButtons">
-          <button class="primary" id="btnToggleHistory">Historie anzeigen</button>
-          <button class="primary" id="btnToggleMembers">Mitglieder anzeigen</button>
-          <button class="primary" id="btnToggleTournament">Neues Turnier erfassen</button>
-        </div>
-      </div>
-
-      <div id="historyWrap" class="hide">
-        <table class="history">
-          <thead>
-            <tr><th style="width: 140px;">Datum</th><th>Gewinner</th></tr>
-          </thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-      </div>
-
-      <div id="membersWrap" class="hide">
-        <div class="subpanel">
-          <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
-          <table class="members">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th style="width: 110px;">Siege</th>
-                <th style="width: 180px;">Beitritt</th>
-              </tr>
-            </thead>
-            <tbody id="membersBody"></tbody>
-          </table>
-
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:12px;">
-            <div style="flex:1 1 240px;min-width:220px;">
-              <label for="memName">Name</label>
-              <input id="memName" type="text" placeholder="Max Mustermann" />
-            </div>
-            <div style="flex:1 1 240px;min-width:220px;">
-              <label for="memNick">Spitzname (optional)</label>
-              <input id="memNick" type="text" placeholder="Max" />
-            </div>
-            <div style="flex:1 1 240px;min-width:220px;">
-              <label for="memJoin">Beitrittsdatum</label>
-              <input id="memJoin" type="date" />
+          <div style="flex:1 1 240px;min-width:220px;">
+            <button class="primary btnWide" id="btnToggleHistory">Historie anzeigen</button>
+            <div id="historyInline" class="hide" style="margin-top:10px;">
+              <table class="history">
+                <thead>
+                  <tr><th style="width: 140px;">Datum</th><th>Gewinner</th></tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+              </table>
             </div>
           </div>
 
-          <div class="btnbar">
-            <button class="primary btnWide" id="btnAddMember">Mitglied hinzufügen</button>
-          </div>
-        </div>
-      </div>
+          <div style="flex:1 1 240px;min-width:220px;">
+            <button class="primary btnWide" id="btnToggleMembers">Mitglieder anzeigen</button>
+            <div id="membersInline" class="hide" style="margin-top:10px;">
+              <div class="subpanel" style="margin-top:0;">
+                <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
+                <table class="members">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th style="width: 110px;">Siege</th>
+                      <th style="width: 180px;">Beitritt</th>
+                    </tr>
+                  </thead>
+                  <tbody id="membersBody"></tbody>
+                </table>
 
-      <div id="tournamentWrap" class="hide">
-        <div class="subpanel">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
-            <div style="flex:1 1 240px;min-width:220px;">
-              <label for="datePick">Turnierdatum</label>
-              <input id="datePick" type="date" />
-            </div>
-            <div style="flex:1 1 240px;min-width:220px;">
-              <label for="playerPick">Gewinner</label>
-              <select id="playerPick"></select>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:12px;">
+                  <div style="flex:1 1 240px;min-width:220px;">
+                    <label for="memName">Name</label>
+                    <input id="memName" type="text" placeholder="Max Mustermann" />
+                  </div>
+                  <div style="flex:1 1 240px;min-width:220px;">
+                    <label for="memNick">Spitzname (optional)</label>
+                    <input id="memNick" type="text" placeholder="Max" />
+                  </div>
+                  <div style="flex:1 1 240px;min-width:220px;">
+                    <label for="memJoin">Beitrittsdatum</label>
+                    <input id="memJoin" type="date" />
+                  </div>
+                </div>
+
+                <div class="btnbar">
+                  <button class="primary btnWide" id="btnAddMember">Mitglied hinzufügen</button>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="btnbar">
-            <button class="primary btnWide" id="btnAddWinner">Gewinner hinzufügen</button>
+
+          <div style="flex:1 1 240px;min-width:220px;">
+            <button class="primary btnWide" id="btnToggleTournament">Neues Turnier erfassen</button>
+            <div id="tournamentWrap" class="hide" style="margin-top:10px;">
+              <div class="subpanel" style="margin-top:0;">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
+                  <div style="flex:1 1 240px;min-width:220px;">
+                    <label for="datePick">Turnierdatum</label>
+                    <input id="datePick" type="date" />
+                  </div>
+                  <div style="flex:1 1 240px;min-width:220px;">
+                    <label for="playerPick">Gewinner</label>
+                    <select id="playerPick"></select>
+                  </div>
+                </div>
+                <div class="btnbar">
+                  <button class="primary btnWide" id="btnAddWinner">Gewinner hinzufügen</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -415,11 +419,11 @@
       lastWinnerWins: $("#lastWinnerWins"),
 
       btnToggleHistory: $("#btnToggleHistory"),
-      historyWrap: $("#historyWrap"),
+      historyInline: $("#historyInline"),
       historyBody: $("#historyBody"),
 
       btnToggleMembers: $("#btnToggleMembers"),
-      membersWrap: $("#membersWrap"),
+      membersInline: $("#membersInline"),
       membersBody: $("#membersBody"),
       memName: $("#memName"),
       memNick: $("#memNick"),
@@ -487,8 +491,8 @@
     function renderCupIdPill(){ els.cupIdPill.textContent = state.cupId ? state.cupId : "–"; }
 
     function updateMenuButtonLabels(){
-      const histOpen = !els.historyWrap.classList.contains("hide");
-      const memOpen  = !els.membersWrap.classList.contains("hide");
+      const histOpen = !els.historyInline.classList.contains("hide");
+      const memOpen  = !els.membersInline.classList.contains("hide");
       els.btnToggleHistory.textContent = (histOpen ? "Historie ausblenden" : "Historie anzeigen") + ` (${state.winners.length})`;
       els.btnToggleMembers.textContent = (memOpen ? "Mitglieder ausblenden" : "Mitglieder anzeigen") + ` (${state.players.length})`;
     }
@@ -567,7 +571,7 @@
       const players = state.players.slice().sort((a,b) => {
         const ma = String(a.id).match(/^P(\d+)$/i);
         const mb = String(b.id).match(/^P(\d+)$/i);
-        if (ma && mb) return Number(ma[1]) - Number(mb[1]); // FIX
+        if (ma && mb) return Number(ma[1]) - Number(mb[1]);
         return String(a.id).localeCompare(String(b.id));
       });
 
@@ -610,14 +614,14 @@
       els.membersBody.innerHTML = "";
 
       const players = state.players.slice().sort((a,b) => a.name.localeCompare(b.name, "de"));
+      const isMobile = window.matchMedia("(max-width: 700px)").matches;
+
       for (const p of players){
         const wins = winCount.get(p.id) || 0;
         const join = p.joinDate ? escapeHtml(formatDE(p.joinDate)) : "–";
 
         const tr = document.createElement("tr");
-
-        // Handy: "Karten"-Layout (2 Zeilen)
-        if (window.matchMedia("(max-width: 700px)").matches) {
+        if (isMobile){
           tr.innerHTML = `
             <td>
               <span class="who">
@@ -631,7 +635,6 @@
             </td>
           `;
         } else {
-          // Desktop: normale Tabelle mit 3 Spalten
           tr.innerHTML = `
             <td>
               <span class="who">
@@ -643,7 +646,6 @@
             <td>${join}</td>
           `;
         }
-
         els.membersBody.appendChild(tr);
       }
     }
@@ -699,7 +701,6 @@
     }
 
     function renderExport(){ els.exportText.value = buildExportText(); }
-
     function renderHeader(){ displayCupTitle(); renderCupIdPill(); }
 
     function renderAllAfterRead(){
@@ -781,7 +782,7 @@
     }
 
     async function nfcReadOnce(){
-      if (!hasWebNfc()){ setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar."); return; }
+      if (!hasWebNfc()){ setStatus("err", "Web NFC ist nicht verfügbar."); return; }
       if (!isSecureContextOk()){ setStatus("err", "Web NFC erfordert HTTPS (oder localhost)."); return; }
 
       try{
@@ -912,15 +913,16 @@
       els.playerPick.value = "";
     });
 
+    // Inline-Toggle: direkt unter dem jeweiligen Button
     els.btnToggleHistory.addEventListener("click", () => {
-      els.historyWrap.classList.toggle("hide");
+      els.historyInline.classList.toggle("hide");
       updateMenuButtonLabels();
     });
 
     els.btnToggleMembers.addEventListener("click", () => {
-      els.membersWrap.classList.toggle("hide");
+      els.membersInline.classList.toggle("hide");
       updateMenuButtonLabels();
-      if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
+      if (!els.membersInline.classList.contains("hide")) renderMembersTable();
     });
 
     els.btnToggleTournament.addEventListener("click", () => {
@@ -931,9 +933,9 @@
 
     els.btnCopy.addEventListener("click", copyExportToClipboard);
 
-    // Re-render Members-Table on resize (für Handy<->Desktop Layout Wechsel)
+    // Re-render Members-Table on resize (Handy<->Desktop Layout Wechsel)
     window.addEventListener("resize", () => {
-      if (!els.membersWrap.classList.contains("hide")) renderMembersTable();
+      if (!els.membersInline.classList.contains("hide")) renderMembersTable();
     });
 
     (function init(){
