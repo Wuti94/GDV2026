@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NFC Wanderpokal</title>
 
+  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#0b0a10">
   <link rel="icon" href="./icon.svg">
@@ -133,7 +134,6 @@
       gap: 10px;
       margin-top: 10px;
     }
-
     .btnBig, .btnFull, .btnWide{
       width: 100%;
       padding: 14px 14px;
@@ -245,7 +245,6 @@
     @media (max-width: 700px){
       #webNfcLabel{ display:none !important; }
 
-      /* NUR untereinander, kein "Platzhalter" */
       #topActionButtons{
         flex-direction: column;
         gap: 8px;
@@ -462,6 +461,13 @@
       els.status.classList.remove("ok", "err", "warn");
       if (kind) els.status.classList.add(kind);
       els.status.textContent = msg;
+    }
+
+    // --- FIX: Option A wieder drin ---
+    function clearManualErrorUI(){
+      if (!els.statusManual) return;
+      els.statusManual.classList.remove("err");
+      els.statusManual.textContent = MANUAL_DEFAULT_INFO;
     }
 
     function todayISO(){
@@ -755,6 +761,26 @@
       }
     }
 
+    async function copyExportToClipboard(){
+      const text = (els.exportText.value || "").trim();
+      if (!text){ setStatus("err", "Kein Text vorhanden."); return; }
+      try{
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(text);
+          setStatus("ok", "Text wurde in die Zwischenablage kopiert.");
+          return;
+        }
+      }catch(_e){}
+      try{
+        els.exportText.focus();
+        els.exportText.select();
+        const ok = document.execCommand("copy");
+        setStatus(ok ? "ok" : "err", ok ? "Text wurde in die Zwischenablage kopiert." : "Kopieren nicht erlaubt. Bitte manuell kopieren.");
+      }catch(_e){
+        setStatus("err", "Kopieren nicht erlaubt. Bitte manuell kopieren.");
+      }
+    }
+
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
 
@@ -845,16 +871,19 @@
       }
     }
 
+    // Service Worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 
+    // Events
     if (els.btnRead) els.btnRead.addEventListener("click", () => {
       try{
         const parsed = parseNfcText(els.inputText.value);
         applyParsed(parsed);
+        clearManualErrorUI();
         renderAllAfterRead();
         setStatus("ok", "Pokal erfolgreich ausgelesen.");
         hideNfcReadPanelOnMobileAfterSuccess();
@@ -870,6 +899,7 @@
 
     els.btnNfcRead.addEventListener("click", nfcReadOnce);
     els.btnNfcWrite.addEventListener("click", () => nfcWrite(els.exportText.value));
+    els.btnCopy.addEventListener("click", copyExportToClipboard);
 
     els.btnAddMember.addEventListener("click", () => {
       const name = (els.memName.value || "").trim();
