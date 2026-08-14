@@ -115,7 +115,6 @@
       letter-spacing: 0.25px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.25);
       transition: transform 0.05s ease, border-color 0.15s ease, filter 0.15s ease;
-      width: auto;
     }
     button:hover{ border-color: rgba(232,197,110,0.65); filter: brightness(1.05); }
     button:active{ transform: translateY(1px); }
@@ -230,20 +229,27 @@
       font-weight: 650;
     }
 
-    /* --- Handy-Layout Regeln --- */
     @media (max-width: 700px){
       #webNfcLabel{ display:none !important; }
 
-      /* Buttons im Menü alle gleich breit (100%) */
-      #topActionButtons{ flex-direction: column; }
+      #topActionButtons{
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      #topActionButtons > .actionBlock{
+        flex: 0 0 auto;
+        min-width: 0;
+        width: 100%;
+      }
       #topActionButtons button{ width: 100%; }
+      #topActionButtons .inlineWrap{ margin-top: 8px !important; }
 
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
 
-      /* Mitglieder: Karten-Liste */
       table.members thead{ display:none; }
       table.members, table.members tbody, table.members tr, table.members td{
         display:block;
@@ -261,7 +267,6 @@
         margin-right: 10px;
       }
 
-      /* Historie: Datum schmal halten */
       table.history th:first-child{ width: 110px !important; }
     }
   </style>
@@ -306,11 +311,10 @@
           </div>
         </div>
 
-        <!-- Buttons + Panels direkt darunter (je Button) -->
         <div class="btnbar" id="topActionButtons">
-          <div style="flex:1 1 240px;min-width:220px;">
+          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
             <button class="primary btnWide" id="btnToggleHistory">Historie anzeigen</button>
-            <div id="historyInline" class="hide" style="margin-top:10px;">
+            <div id="historyInline" class="hide inlineWrap" style="margin-top:10px;">
               <table class="history">
                 <thead>
                   <tr><th style="width: 140px;">Datum</th><th>Gewinner</th></tr>
@@ -320,9 +324,9 @@
             </div>
           </div>
 
-          <div style="flex:1 1 240px;min-width:220px;">
+          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
             <button class="primary btnWide" id="btnToggleMembers">Mitglieder anzeigen</button>
-            <div id="membersInline" class="hide" style="margin-top:10px;">
+            <div id="membersInline" class="hide inlineWrap" style="margin-top:10px;">
               <div class="subpanel" style="margin-top:0;">
                 <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
                 <table class="members">
@@ -358,9 +362,9 @@
             </div>
           </div>
 
-          <div style="flex:1 1 240px;min-width:220px;">
+          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
             <button class="primary btnWide" id="btnToggleTournament">Neues Turnier erfassen</button>
-            <div id="tournamentWrap" class="hide" style="margin-top:10px;">
+            <div id="tournamentWrap" class="hide inlineWrap" style="margin-top:10px;">
               <div class="subpanel" style="margin-top:0;">
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
                   <div style="flex:1 1 240px;min-width:220px;">
@@ -493,8 +497,23 @@
     function updateMenuButtonLabels(){
       const histOpen = !els.historyInline.classList.contains("hide");
       const memOpen  = !els.membersInline.classList.contains("hide");
+      const tourOpen = !els.tournamentWrap.classList.contains("hide");
+
       els.btnToggleHistory.textContent = (histOpen ? "Historie ausblenden" : "Historie anzeigen") + ` (${state.winners.length})`;
       els.btnToggleMembers.textContent = (memOpen ? "Mitglieder ausblenden" : "Mitglieder anzeigen") + ` (${state.players.length})`;
+      els.btnToggleTournament.textContent = tourOpen ? "Turnier ausblenden" : "Neues Turnier erfassen";
+    }
+
+    function closeAllInlinePanels(except){
+      const panels = [
+        { key: "history", el: els.historyInline },
+        { key: "members", el: els.membersInline },
+        { key: "tournament", el: els.tournamentWrap },
+      ];
+      for (const p of panels){
+        if (p.key === except) continue;
+        p.el.classList.add("hide");
+      }
     }
 
     function nextPlayerId(){
@@ -913,27 +932,43 @@
       els.playerPick.value = "";
     });
 
-    // Inline-Toggle: direkt unter dem jeweiligen Button
+    // ---- EXKLUSIVES Öffnen (immer nur eins offen) ----
     els.btnToggleHistory.addEventListener("click", () => {
-      els.historyInline.classList.toggle("hide");
+      const willOpen = els.historyInline.classList.contains("hide");
+      if (willOpen){
+        closeAllInlinePanels("history");
+        els.historyInline.classList.remove("hide");
+      } else {
+        els.historyInline.classList.add("hide");
+      }
       updateMenuButtonLabels();
     });
 
     els.btnToggleMembers.addEventListener("click", () => {
-      els.membersInline.classList.toggle("hide");
+      const willOpen = els.membersInline.classList.contains("hide");
+      if (willOpen){
+        closeAllInlinePanels("members");
+        els.membersInline.classList.remove("hide");
+        renderMembersTable();
+      } else {
+        els.membersInline.classList.add("hide");
+      }
       updateMenuButtonLabels();
-      if (!els.membersInline.classList.contains("hide")) renderMembersTable();
     });
 
     els.btnToggleTournament.addEventListener("click", () => {
-      const isHidden = els.tournamentWrap.classList.contains("hide");
-      els.tournamentWrap.classList.toggle("hide");
-      els.btnToggleTournament.textContent = isHidden ? "Turnier ausblenden" : "Neues Turnier erfassen";
+      const willOpen = els.tournamentWrap.classList.contains("hide");
+      if (willOpen){
+        closeAllInlinePanels("tournament");
+        els.tournamentWrap.classList.remove("hide");
+      } else {
+        els.tournamentWrap.classList.add("hide");
+      }
+      updateMenuButtonLabels();
     });
 
     els.btnCopy.addEventListener("click", copyExportToClipboard);
 
-    // Re-render Members-Table on resize (Handy<->Desktop Layout Wechsel)
     window.addEventListener("resize", () => {
       if (!els.membersInline.classList.contains("hide")) renderMembersTable();
     });
