@@ -131,7 +131,6 @@
       margin-top: 10px;
     }
 
-    /* Button "Pokal auslesen" an andere Buttons anpassen */
     .btnBig{
       width: 100%;
       padding: 14px 14px;
@@ -235,6 +234,8 @@
       padding: 10px 12px;
       border-bottom: 1px solid rgba(227,195,120,0.14);
       font-size: 13px;
+      vertical-align: top;
+      word-break: break-word;
     }
     th{
       color: rgba(246,227,161,0.85);
@@ -247,7 +248,24 @@
     .row > .col{ flex: 1 1 240px; min-width: 220px; }
     .hide{ display:none !important; }
 
-    /* Handy-Spezifisch */
+    /* Name/Nick Darstellung (damit Zeilenumbruch nicht mitten im Spitznamen landet) */
+    .who{
+      display:block;
+      line-height: 1.25;
+    }
+    .who .name{
+      display:block;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .who .nick{
+      display:block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
     @media (max-width: 700px){
       /* "Web NFC" ausblenden */
       #webNfcLabel{ display:none !important; }
@@ -258,6 +276,9 @@
       #afterRead .subpanel .btnbar button{ width: 100%; }
       #exportButtons{ flex-direction: column; }
       #exportButtons button{ width: 100%; }
+
+      /* In Tabellen: Name/Nick immer untereinander */
+      td .who .nick{ white-space: normal; }
     }
   </style>
 </head>
@@ -380,7 +401,6 @@
       </div>
     </section>
 
-    <!-- Status/Info IMMER am unteren Ende der Seite -->
     <div id="status" class="status" style="margin-top:12px;">
       Tippe auf „Pokal auslesen“ und halte den NFC-Tag an dein Gerät.
     </div>
@@ -593,7 +613,7 @@
       const players = state.players.slice().sort((a,b) => {
         const ma = String(a.id).match(/^P(\d+)$/i);
         const mb = String(b.id).match(/^P(\d+)$/i);
-        if (ma && mb) return Number(ma[1]) - Number(mb[1]);
+        if (ma && mb) return Number(m[1]) - Number(mb[1]);
         return String(a.id).localeCompare(String(b.id));
       });
 
@@ -647,12 +667,22 @@
 
       const players = state.players.slice().sort((a,b) => a.name.localeCompare(b.name, "de"));
       for (const p of players){
-        const nick = p.nick ? `(${escapeHtml(p.nick)})` : "";
         const wins = winCount.get(p.id) || 0;
         const join = p.joinDate ? escapeHtml(formatDE(p.joinDate)) : "–";
 
+        const nickHtml = p.nick ? `<span class="nick">${escapeHtml(p.nick)}</span>` : `<span class="nick">–</span>`;
+
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${escapeHtml(p.name)}${nick}</td><td>${wins}</td><td>${join}</td>`;
+        tr.innerHTML = `
+          <td>
+            <span class="who">
+              <span class="name">${escapeHtml(p.name)}</span>
+              ${p.nick ? `<span class="nick">${escapeHtml(p.nick)}</span>` : ``}
+            </span>
+          </td>
+          <td>${wins}</td>
+          <td>${join}</td>
+        `;
         els.membersBody.appendChild(tr);
       }
     }
@@ -691,14 +721,21 @@
 
       for (const w of state.winners){
         const p = playerById(w.playerId);
-        const name = p
-          ? `${escapeHtml(p.name)}${p.nick ? " ("+escapeHtml(p.nick)+")" : ""}`
-          : "Unbekannter Spieler";
 
         const dateDE = escapeHtml(formatDE(w.date));
+        const name = p ? escapeHtml(p.name) : "Unbekannter Spieler";
+        const nick = (p && p.nick) ? escapeHtml(p.nick) : "";
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${dateDE}</td><td>${name}</td>`;
+        tr.innerHTML = `
+          <td>${dateDE}</td>
+          <td>
+            <span class="who">
+              <span class="name">${name}</span>
+              ${nick ? `<span class="nick">${nick}</span>` : ``}
+            </span>
+          </td>
+        `;
         els.historyBody.appendChild(tr);
       }
     }
@@ -747,7 +784,15 @@
         return;
       }
 
-      const id = nextPlayerId();
+      const id = (function nextPlayerId(){
+        let max = 0;
+        for (const p of state.players){
+          const m = String(p.id).match(/^P(\d+)$/i);
+          if (m) max = Math.max(max, Number(m[1]));
+        }
+        return "P" + (max + 1);
+      })();
+
       state.players.push({ id, name, nick, joinDate: join });
 
       renderPlayersDropdown();
@@ -906,7 +951,7 @@
     }
 
     async function nfcWrite(text){
-      if (!hasWebNfc()){ setStatus("err", "Web NFC ist in diesem Browser nicht verfügbar."); return; }
+      if (!hasWebNfc()){ setStatus("err", "Web NFC ist nicht verfügbar."); return; }
       if (!isSecureContextOk()){ setStatus("err", "Web NFC erfordert HTTPS (oder localhost)."); return; }
 
       const payload = (text || "").trim();
