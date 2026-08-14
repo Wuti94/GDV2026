@@ -229,25 +229,37 @@
       font-weight: 650;
     }
 
+    /* Action-Menü */
+    #topActionButtons{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .actionBlock{
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+    .inlineWrap{ margin-top: 10px; }
+
     @media (max-width: 700px){
       #webNfcLabel{ display:none !important; }
 
+      /* NUR untereinander, kein "Platzhalter" */
       #topActionButtons{
         flex-direction: column;
         gap: 8px;
-        margin-top: 10px;
       }
-      #topActionButtons > .actionBlock{
+      .actionBlock{
         flex: 0 0 auto;
         min-width: 0;
         width: 100%;
       }
-      #topActionButtons button{ width: 100%; }
-      #topActionButtons .inlineWrap{ margin-top: 8px !important; }
+      .inlineWrap{ margin-top: 8px; }
 
       #exportText{ display:none !important; }
       label[for="exportText"]{ display:none !important; }
-      #exportButtons{ flex-direction: column; }
+      #exportButtons{ display:flex; flex-direction: column; gap:10px; }
       #exportButtons button{ width: 100%; }
 
       table.members thead{ display:none; }
@@ -311,10 +323,10 @@
           </div>
         </div>
 
-        <div class="btnbar" id="topActionButtons">
-          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
+        <div id="topActionButtons">
+          <div class="actionBlock">
             <button class="primary btnWide" id="btnToggleHistory">Historie anzeigen</button>
-            <div id="historyInline" class="hide inlineWrap" style="margin-top:10px;">
+            <div id="historyInline" class="hide inlineWrap">
               <table class="history">
                 <thead>
                   <tr><th style="width: 140px;">Datum</th><th>Gewinner</th></tr>
@@ -324,9 +336,9 @@
             </div>
           </div>
 
-          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
+          <div class="actionBlock">
             <button class="primary btnWide" id="btnToggleMembers">Mitglieder anzeigen</button>
-            <div id="membersInline" class="hide inlineWrap" style="margin-top:10px;">
+            <div id="membersInline" class="hide inlineWrap">
               <div class="subpanel" style="margin-top:0;">
                 <div style="font-size:12px;color:var(--muted); margin-bottom:6px;">Mitglieder</div>
                 <table class="members">
@@ -362,9 +374,9 @@
             </div>
           </div>
 
-          <div class="actionBlock" style="flex:1 1 240px;min-width:220px;">
+          <div class="actionBlock">
             <button class="primary btnWide" id="btnToggleTournament">Neues Turnier erfassen</button>
-            <div id="tournamentWrap" class="hide inlineWrap" style="margin-top:10px;">
+            <div id="tournamentWrap" class="hide inlineWrap">
               <div class="subpanel" style="margin-top:0;">
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
                   <div style="flex:1 1 240px;min-width:220px;">
@@ -450,12 +462,6 @@
       els.status.classList.remove("ok", "err", "warn");
       if (kind) els.status.classList.add(kind);
       els.status.textContent = msg;
-    }
-
-    function clearManualErrorUI(){
-      if (!els.statusManual) return;
-      els.statusManual.classList.remove("err");
-      els.statusManual.textContent = MANUAL_DEFAULT_INFO;
     }
 
     function todayISO(){
@@ -749,26 +755,6 @@
       }
     }
 
-    async function copyExportToClipboard(){
-      const text = (els.exportText.value || "").trim();
-      if (!text){ setStatus("err", "Kein Text vorhanden."); return; }
-      try{
-        if (navigator.clipboard && navigator.clipboard.writeText){
-          await navigator.clipboard.writeText(text);
-          setStatus("ok", "Text wurde in die Zwischenablage kopiert.");
-          return;
-        }
-      }catch(_e){}
-      try{
-        els.exportText.focus();
-        els.exportText.select();
-        const ok = document.execCommand("copy");
-        setStatus(ok ? "ok" : "err", ok ? "Text wurde in die Zwischenablage kopiert." : "Kopieren nicht erlaubt. Bitte manuell kopieren.");
-      }catch(_e){
-        setStatus("err", "Kopieren nicht erlaubt. Bitte manuell kopieren.");
-      }
-    }
-
     function hasWebNfc(){ return ("NDEFReader" in window); }
     function isSecureContextOk(){ return (location.protocol === "https:" || location.hostname === "localhost"); }
 
@@ -869,7 +855,6 @@
       try{
         const parsed = parseNfcText(els.inputText.value);
         applyParsed(parsed);
-        clearManualErrorUI();
         renderAllAfterRead();
         setStatus("ok", "Pokal erfolgreich ausgelesen.");
         hideNfcReadPanelOnMobileAfterSuccess();
@@ -932,7 +917,7 @@
       els.playerPick.value = "";
     });
 
-    // ---- EXKLUSIVES Öffnen (immer nur eins offen) ----
+    // exklusives Öffnen
     els.btnToggleHistory.addEventListener("click", () => {
       const willOpen = els.historyInline.classList.contains("hide");
       if (willOpen){
@@ -966,8 +951,6 @@
       }
       updateMenuButtonLabels();
     });
-
-    els.btnCopy.addEventListener("click", copyExportToClipboard);
 
     window.addEventListener("resize", () => {
       if (!els.membersInline.classList.contains("hide")) renderMembersTable();
